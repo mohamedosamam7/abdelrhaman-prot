@@ -1,0 +1,260 @@
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 620px;
+  max-height: 1200px;
+  overflow: hidden;
+}
+
+/* Invisible editorial grid: 12 columns, frames above and below a central
+   identity row that can never collide with the photographs. */
+.stage {
+  position: absolute;
+  top: calc(var(--header-h) + 4px);
+  bottom: var(--gutter);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  /* 4 flexible rows · identity row (sized by its content) · 3 flexible rows */
+  grid-template-rows: repeat(4, minmax(0, 1fr)) auto repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+/* ── Frames ─────────────────────────────────────────────────────────────── */
+
+.tile {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+
+.inner img {
+  object-fit: cover;
+}
+
+/* Desktop contact sheet
+   0 narrow · 1 landscape · 2 square · 3 portrait
+   4 narrow · 5 landscape · 6 square · 7 wide */
+.t0 { grid-area: 1 / 1 / 6 / 2; }
+.t1 { grid-area: 1 / 3 / 5 / 6; }
+.t2 { grid-area: 2 / 7 / 5 / 9; }
+.t3 { grid-area: 1 / 10 / 5 / 12; }
+.t4 { grid-area: 5 / 12 / 9 / 13; }
+.t5 { grid-area: 6 / 1 / 9 / 4; }
+.t6 { grid-area: 6 / 5 / 9 / 7; }
+.t7 { grid-area: 6 / 8 / 9 / 11; }
+
+/* ── Identity ───────────────────────────────────────────────────────────── */
+
+.identity {
+  grid-area: 5 / 2 / 6 / 12;
+  justify-self: center;
+  padding-block: clamp(8px, 1.4vh, 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(10px, 1.1vw, 18px);
+  z-index: 1;
+}
+
+.name {
+  text-align: center;
+  margin-inline: -0.04em;
+}
+
+.mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.04em;
+}
+
+.mask > span {
+  display: block;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.metaBottom {
+  align-items: flex-end;
+}
+
+.tagline {
+  max-width: 14em;
+}
+
+.disciplines {
+  color: var(--muted);
+  text-align: right;
+}
+
+/* ── Opening sequence ────────────────────────────────────────────────────
+   Pure CSS so it starts with the first paint. Each frame starts pulled
+   toward the centre (--fx/--fy) and slightly smaller, then settles into the
+   grid. Opacity arrives quickly; the movement keeps going, so the motion is
+   what you notice. Durations ≈1.5× the previous JS version (2.2s → 3.2s).
+   `both` holds the start state before each delay, so there is never a flash
+   of the finished layout. Reduced motion: globals.css collapses durations. */
+
+.hero {
+  /* Even, unhurried travel with a soft landing — the motion is spread over
+     the whole duration instead of being spent in the first half-second. */
+  --ease-hero: cubic-bezier(0.4, 0.1, 0.2, 1);
+}
+
+.tile {
+  --t-delay: calc(var(--i, 0) * 110ms);
+  animation:
+    hero-tile-move 3200ms var(--ease-hero) var(--t-delay) both,
+    hero-tile-fade 1300ms var(--ease) var(--t-delay) both;
+}
+
+.hero[data-settled] .tile {
+  animation: none;
+}
+
+@keyframes hero-tile-move {
+  from {
+    transform: translate3d(var(--fx, 0), var(--fy, 0), 0) scale(0.84);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes hero-tile-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.mask > span {
+  animation: hero-rise 2200ms var(--ease-hero) 500ms both;
+}
+
+.mask + .mask > span {
+  animation-delay: 680ms;
+}
+
+@keyframes hero-rise {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.metaRow {
+  animation: hero-tile-fade 1400ms var(--ease) 1700ms both;
+}
+
+.metaBottom {
+  animation-delay: 1900ms;
+}
+
+/* Start offsets toward the centre (≈34% of each frame's distance). */
+.t0 { --fx: 15vw; --fy: 5vh; }
+.t1 { --fx: 6vw; --fy: 9vh; }
+.t2 { --fx: -3vw; --fy: 8vh; }
+.t3 { --fx: -10vw; --fy: 9vh; }
+.t4 { --fx: -15vw; --fy: -7vh; }
+.t5 { --fx: 12vw; --fy: -10vh; }
+.t6 { --fx: 3vw; --fy: -10vh; }
+.t7 { --fx: -7vw; --fy: -10vh; }
+
+/* ── Tablet ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .identity {
+    grid-area: 5 / 1 / 6 / 13;
+  }
+
+  .t0 { grid-area: 1 / 1 / 5 / 3; }
+  .t4 { grid-area: 6 / 12 / 9 / 13; }
+}
+
+/* ── Phone: six frames, simpler motion ──────────────────────────────────── */
+
+@media (max-width: 699px) {
+  /* Compact on phones: never taller than ~one short screen. */
+  .hero {
+    min-height: 540px;
+    max-height: 700px;
+  }
+
+  .stage {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr)) auto repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .t0 { grid-area: 1 / 1 / 5 / 4; }
+  .t1 { grid-area: 1 / 4 / 3 / 7; }
+  .t2 { grid-area: 3 / 4 / 5 / 6; }
+  .t3 { grid-area: 6 / 5 / 10 / 7; }
+  .t5 { grid-area: 6 / 1 / 8 / 5; }
+  .t7 { grid-area: 8 / 2 / 10 / 5; }
+
+  .t4,
+  .t6 {
+    display: none;
+  }
+
+  .identity {
+    grid-area: 5 / 1 / 6 / 7;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .name {
+    font-size: clamp(40px, 12.6vw, 72px);
+  }
+
+  .metaRow {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Phones: half the travel and less scale — same idea, no clipping or
+     jank on smaller GPUs. */
+  .tile {
+    --t-delay: calc(var(--i, 0) * 90ms);
+    animation-duration: 2600ms, 1100ms;
+  }
+
+  @keyframes hero-tile-move {
+    from {
+      transform: translate3d(calc(var(--fx, 0) * 0.5), calc(var(--fy, 0) * 0.5), 0) scale(0.92);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  .t0 { --fx: 8vw; --fy: 9vh; }
+  .t1 { --fx: -8vw; --fy: 12vh; }
+  .t2 { --fx: -6vw; --fy: 6vh; }
+  .t3 { --fx: -10vw; --fy: -9vh; }
+  .t5 { --fx: 6vw; --fy: -5vh; }
+  .t7 { --fx: 3vw; --fy: -12vh; }
+}

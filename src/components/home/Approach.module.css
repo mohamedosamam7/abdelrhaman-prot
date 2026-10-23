@@ -1,0 +1,129 @@
+.section {
+  padding-block: clamp(48px, 7vw, 112px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gap);
+  align-items: start;
+}
+
+/* Narrower than the reference: the source photo is only ~450px wide. */
+.figure {
+  grid-column: 1 / span 4;
+}
+
+/* Keep the portrait frame from outgrowing the viewport on short screens. */
+.photo {
+  max-height: min(78svh, 760px);
+  width: 100%;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.content {
+  grid-column: 6 / span 7;
+  display: grid;
+  gap: 20px;
+  padding-top: clamp(0px, 2vw, 32px);
+}
+
+.heading {
+  font-size: clamp(44px, 5.4vw, 88px);
+  line-height: 0.98;
+}
+
+.em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.body {
+  max-width: 38ch;
+  font-size: clamp(16px, 1.2vw, 19px);
+  line-height: 1.5;
+}
+
+.points {
+  margin-top: clamp(16px, 4vw, 72px);
+  border-top: 1px solid var(--line);
+}
+
+.point {
+  display: grid;
+  grid-template-columns: 36px minmax(90px, 0.32fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.index {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  font-size: clamp(22px, 1.8vw, 28px);
+}
+
+@media (max-width: 1023px) {
+  .figure {
+    grid-column: 1 / span 5;
+  }
+
+  .content {
+    grid-column: 6 / span 7;
+  }
+}
+
+/* Phone: one compact column; a moderate image, not a screen-filler. */
+@media (max-width: 767px) {
+  .grid {
+    grid-template-columns: 1fr;
+    row-gap: 28px;
+  }
+
+  .figure,
+  .content {
+    grid-column: 1 / -1;
+  }
+
+  .content {
+    order: -1;
+    gap: 14px;
+    padding-top: 0;
+  }
+
+  .photo {
+    aspect-ratio: 4 / 3.6 !important;
+    max-height: 62svh;
+  }
+
+  .heading {
+    font-size: clamp(40px, 11.4vw, 54px);
+  }
+
+  .points {
+    margin-top: 8px;
+  }
+
+  .point {
+    grid-template-columns: 28px 96px minmax(0, 1fr);
+    padding-block: 13px;
+    font-size: 14px;
+  }
+}

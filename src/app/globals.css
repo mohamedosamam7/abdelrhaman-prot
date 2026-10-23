@@ -1,0 +1,469 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   E STUDIO — design system
+   Burgundy and warm cream chrome; the photographs keep their own colour.
+   Palette values are implementation choices, not official brand codes.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Brand palette */
+  --wine-900: #2e0a10; /* deepest surface (footer, alternates) */
+  --wine-850: #3b0d14; /* deep burgundy — primary dark surface */
+  --wine-800: #4a121b; /* raised surface, empty frames on dark */
+  --wine-700: #641927; /* primary burgundy — logo on cream */
+  --red: #8b2635; /* restrained accent on cream */
+  --rose: #dba293; /* accent for small type on burgundy */
+  --cream: #f3ebdd;
+  --beige: #e4d8ca;
+
+  /* Legacy names, kept so every module re-themes from one place */
+  --ink: var(--wine-850);
+  --ink-2: var(--wine-800);
+  --ivory: var(--cream);
+  --ivory-2: var(--beige);
+  --paper: var(--cream);
+
+  --fg: var(--ivory);
+  --bg: var(--ink);
+  --muted: rgba(243, 235, 221, 0.7);
+  --line: rgba(243, 235, 221, 0.16);
+  --accent: var(--rose);
+  --logo: var(--cream);
+
+  --max: 1680px;
+  --gutter: clamp(16px, 2.8vw, 44px);
+  --gap: clamp(10px, 1.5vw, 24px);
+  --section: clamp(80px, 10vw, 160px);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); /* calm out */
+  --ease-inout: cubic-bezier(0.76, 0, 0.18, 1); /* cinematic in-out */
+
+  --font-sans: var(--font-grotesk), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-editorial), "Times New Roman", serif;
+
+  --header-h: 68px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-h: 60px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Anchors land below the fixed header, with a little breathing room. */
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: clamp(16px, 0.25vw + 15px, 18px);
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  overflow-x: clip;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  left: var(--gutter);
+  top: 12px;
+  z-index: 100;
+  padding: 10px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* ── Themes ─────────────────────────────────────────────────────────────── */
+
+.theme-dark {
+  --fg: var(--paper);
+  --bg: var(--ink);
+  --muted: rgba(243, 235, 221, 0.7);
+  --line: rgba(243, 235, 221, 0.16);
+  --accent: var(--rose);
+  --logo: var(--cream);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.theme-light {
+  --fg: var(--wine-850);
+  --bg: var(--ivory);
+  --muted: rgba(59, 13, 20, 0.7);
+  --line: rgba(59, 13, 20, 0.16);
+  --accent: var(--red);
+  --logo: var(--wine-700);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* A deeper burgundy for sections that need a quiet tonal step. */
+.theme-deep {
+  --bg: var(--wine-900);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.container {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gap);
+}
+
+.section {
+  padding-block: var(--section);
+}
+
+/* ── Type ───────────────────────────────────────────────────────────────── */
+
+.t-hero {
+  font-size: clamp(44px, 9.4vw, 160px);
+  font-weight: 500;
+  line-height: 0.84;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+.t-display {
+  font-family: var(--font-serif);
+  font-size: clamp(44px, 6.4vw, 104px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+
+/* Editorial serif headline with selective italic emphasis. */
+.t-serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.t-serif em,
+.t-display em {
+  font-style: italic;
+}
+
+/* Small numbered section label — "(01) — Selected work". */
+.t-label {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.t-title {
+  font-size: clamp(24px, 2.3vw, 40px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.t-lead {
+  font-size: clamp(19px, 1.5vw, 24px);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.t-meta {
+  font-size: clamp(11px, 0.2vw + 10px, 13px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.t-hero .serif {
+  /* optical match: serif italics run smaller than caps grotesk */
+  font-size: 1.08em;
+  letter-spacing: -0.035em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+/* Marks content that still needs real information. */
+.placeholder-mark {
+  display: inline-block;
+  border-bottom: 1px dashed currentColor;
+  opacity: 0.7;
+}
+
+/* ── Links ──────────────────────────────────────────────────────────────── */
+
+.link-line {
+  position: relative;
+  display: inline-block;
+}
+
+.link-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 600ms var(--ease);
+}
+
+.link-line:hover::after,
+.link-line:focus-visible::after,
+.link-line[aria-current="page"]::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── Photography ────────────────────────────────────────────────────────── */
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+
+.theme-light .frame {
+  background: var(--ivory-2);
+}
+
+.frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Project hover — barely-there scale, never a dark overlay. */
+.hover-zoom img {
+  transition: transform 600ms var(--ease);
+}
+
+@media (hover: hover) {
+  .hover-target:hover .hover-zoom img,
+  .hover-target:focus-visible .hover-zoom img {
+    transform: scale(1.018);
+  }
+}
+
+/* ── Reveal motion ──────────────────────────────────────────────────────
+   Fail-safe by design: content is fully visible in the server HTML. Only
+   after RevealObserver has started (and marked whatever is already on
+   screen) does <html> get `.reveal-ready`, which hides the elements still
+   below the fold until they scroll in. If scripts never run — blocked dev
+   resources, a runtime error, an old browser — nothing is ever hidden. */
+
+.reveal-ready [data-reveal] {
+  transition:
+    opacity 700ms var(--ease),
+    transform 700ms var(--ease);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-ready [data-reveal]:not(.is-in) {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+
+.reveal-ready [data-reveal="image"] {
+  transition: clip-path 900ms var(--ease);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-ready [data-reveal="image"]:not(.is-in) {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(6% 0 0 0);
+}
+
+.reveal-ready [data-reveal="image"] img {
+  transition: transform 1200ms var(--ease);
+}
+
+.reveal-ready [data-reveal="image"]:not(.is-in) img {
+  transform: scale(1.05);
+}
+
+/* Hover zoom on revealed images. */
+@media (hover: hover) {
+  .hover-target:hover [data-reveal="image"] img,
+  .hover-target:focus-visible [data-reveal="image"] img {
+    transform: scale(1.018);
+    transition: transform 600ms var(--ease);
+  }
+}
+
+/* Masked line reveal for headings */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.line-mask > span {
+  display: block;
+}
+
+.reveal-ready [data-reveal="lines"]:not(.is-in) {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-ready [data-reveal="lines"] .line-mask > span {
+  transition: transform 900ms var(--ease);
+}
+
+.reveal-ready [data-reveal="lines"]:not(.is-in) .line-mask > span {
+  transform: translate3d(0, 105%, 0);
+}
+
+.reveal-ready [data-reveal="lines"] .line-mask:nth-child(2) > span {
+  transition-delay: 80ms;
+}
+
+.reveal-ready [data-reveal="lines"] .line-mask:nth-child(3) > span {
+  transition-delay: 160ms;
+}
+
+/* Page transition */
+.page-enter {
+  animation: page-in 700ms var(--ease) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .reveal-ready [data-reveal]:not(.is-in),
+  .reveal-ready [data-reveal="image"]:not(.is-in),
+  .reveal-ready [data-reveal="image"]:not(.is-in) img,
+  .reveal-ready [data-reveal="lines"]:not(.is-in) .line-mask > span {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+}

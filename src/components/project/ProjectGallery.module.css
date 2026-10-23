@@ -1,0 +1,25 @@
+/* Even grid; the max width keeps cells near the originals' ~500px size. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 20px);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+.item {
+  display: block;
+  width: 100%;
+  cursor: zoom-in;
+}
+
+.item:focus-visible {
+  outline-offset: 3px;
+}
+
+@media (max-width: 767px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}

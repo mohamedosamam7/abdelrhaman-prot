@@ -1,0 +1,40 @@
+/* The contact section is the whole page; clear the fixed header. */
+.page {
+  padding-top: calc(var(--header-h) + clamp(16px, 3vw, 48px));
+}
+
+.service {
+  padding: 10px 14px;
+  border-left: 2px solid var(--accent);
+  background: rgba(243, 235, 221, 0.06);
+  font-size: 15px;
+}
+
+.service strong {
+  font-weight: 500;
+}
+
+.back {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin-top: clamp(28px, 4vw, 48px);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.backLink svg {
+  transition: transform 300ms var(--ease);
+}
+
+.backLink:hover svg,
+.backLink:focus-visible svg {
+  transform: translateX(3px);
+}

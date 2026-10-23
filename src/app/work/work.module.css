@@ -1,0 +1,9 @@
+.work {
+  padding-top: calc(var(--header-h) + clamp(36px, 6vw, 96px));
+  padding-bottom: clamp(56px, 7vw, 112px);
+}
+
+.work > :global(.container) {
+  display: grid;
+  gap: clamp(28px, 4vw, 56px);
+}

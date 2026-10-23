@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Next.js build output and caches
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment and secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and debug output
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Deployment / tooling
+.vercel/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Design references and client source files (kept locally, not published)
+references/

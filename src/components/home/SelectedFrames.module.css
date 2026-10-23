@@ -1,0 +1,447 @@
+.section {
+  padding-block: clamp(56px, 7vw, 112px) clamp(48px, 6vw, 96px);
+  overflow: hidden;
+}
+
+/* ── Heading ────────────────────────────────────────────────────────────── */
+
+.head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gap);
+  row-gap: 14px;
+  align-items: end;
+  margin-bottom: clamp(28px, 4vw, 64px);
+}
+
+.label {
+  grid-column: 1 / span 3;
+  align-self: start;
+  padding-top: 0.9em;
+}
+
+.heading {
+  grid-column: 4 / span 5;
+  font-size: clamp(44px, 6vw, 96px);
+  line-height: 0.95;
+}
+
+.aside {
+  grid-column: 9 / span 4;
+  display: grid;
+  justify-items: end;
+  gap: 16px;
+  text-align: right;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.aside p {
+  max-width: 34ch;
+}
+
+.all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.all svg {
+  transition: transform 300ms var(--ease);
+}
+
+.all:hover svg,
+.all:focus-visible svg {
+  transform: translateX(3px);
+}
+
+/* ── Category bar ───────────────────────────────────────────────────────── */
+
+.carousel {
+  --card-w: 25%;
+  --track-pad: 0px;
+  position: relative;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: clamp(18px, 2vw, 32px);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color 300ms var(--ease);
+}
+
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 500ms var(--ease);
+}
+
+.tab:hover,
+.tab:focus-visible,
+.tab[aria-pressed="true"] {
+  color: var(--fg);
+}
+
+.tab[aria-pressed="true"]::after {
+  transform: scaleX(1);
+}
+
+.tabCount {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter {
+  flex: none;
+  align-self: flex-start;
+  line-height: 44px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* ── Track ──────────────────────────────────────────────────────────────── */
+
+.viewport {
+  position: relative;
+}
+
+.track {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--track-pad);
+  padding-inline: var(--track-pad);
+  scrollbar-width: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: opacity 450ms var(--ease);
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.track[data-dragging] {
+  scroll-snap-type: none;
+  cursor: grabbing;
+}
+
+.track[data-fading] {
+  opacity: 0;
+}
+
+.card {
+  flex: 0 0 var(--card-w);
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.cardLink {
+  position: relative;
+  display: block;
+  -webkit-user-drag: none;
+}
+
+.media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+
+.media img {
+  object-fit: cover;
+  transition: transform 900ms var(--ease);
+  -webkit-user-drag: none;
+}
+
+.media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+@media (hover: hover) {
+  .cardLink:hover .media img {
+    transform: scale(1.025);
+  }
+}
+
+/* Autoplay progress — a thin line over the frame at the front of the track. */
+.progress {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: var(--track-pad);
+  width: calc((100% - 2 * var(--track-pad)) * var(--card-frac, 0.25));
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  pointer-events: none;
+}
+
+/* Caption: always visible on touch, on hover/focus with a mouse. */
+.caption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 40px 16px 14px;
+  background: linear-gradient(to top, rgba(46, 10, 16, 0.72), rgba(46, 10, 16, 0));
+  color: var(--cream);
+  pointer-events: none;
+}
+
+.captionTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(19px, 1.6vw, 24px);
+  line-height: 1.1;
+}
+
+.captionCat {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .caption {
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 400ms var(--ease),
+      transform 400ms var(--ease);
+  }
+
+  .cardLink:hover .caption,
+  .cardLink:focus-visible .caption {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cardLink:focus-visible {
+  outline-offset: -3px;
+}
+
+/* ── Video ──────────────────────────────────────────────────────────────── */
+
+.play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(243, 235, 221, 0.92);
+  color: var(--wine-850);
+  transition: transform 300ms var(--ease);
+}
+
+.play svg {
+  margin-left: 3px;
+}
+
+.play:hover,
+.play:focus-visible {
+  transform: scale(1.06);
+}
+
+.videoLink {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(46, 10, 16, 0.72);
+  color: var(--cream);
+  font-size: 12px;
+}
+
+/* ── Prev / next ────────────────────────────────────────────────────────── */
+
+.nav {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin-top: -23px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(46, 10, 16, 0.62);
+  color: var(--cream);
+  border: 1px solid rgba(243, 235, 221, 0.28);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color 300ms var(--ease),
+    opacity 300ms var(--ease);
+}
+
+.nav:hover,
+.nav:focus-visible {
+  background: var(--wine-700);
+}
+
+.nav:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.prev {
+  left: max(var(--gutter), 16px);
+}
+
+.next {
+  right: max(var(--gutter), 16px);
+}
+
+/* ── Tablet ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .carousel {
+    --card-w: 40%;
+    --card-frac: 0.4;
+  }
+
+  .label {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+
+  .heading {
+    grid-column: 1 / span 7;
+  }
+
+  .aside {
+    grid-column: 8 / span 5;
+  }
+}
+
+/* ── Phone: one main card with a glimpse of the next ───────────────────── */
+
+@media (max-width: 767px) {
+  .carousel {
+    --track-pad: var(--gutter);
+    --card-w: 84%;
+    --card-frac: 0.84;
+  }
+
+  .head {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+
+  .heading,
+  .aside {
+    grid-column: 1 / -1;
+  }
+
+  .heading {
+    font-size: clamp(44px, 13vw, 60px);
+  }
+
+  .aside {
+    justify-items: start;
+    text-align: left;
+    gap: 4px;
+  }
+
+  .bar {
+    margin-bottom: 8px;
+  }
+
+  .tabs {
+    /* let the tab row run edge to edge without widening the page */
+    margin-left: calc(var(--gutter) * -1);
+    padding-left: var(--gutter);
+    gap: 20px;
+  }
+
+  .counter {
+    padding-left: 8px;
+  }
+
+  .track {
+    gap: 8px;
+  }
+
+  .nav {
+    top: auto;
+    bottom: 14px;
+    margin-top: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  .prev {
+    left: auto;
+    right: calc(var(--gutter) + 16% + 64px);
+  }
+
+  .next {
+    right: calc(var(--gutter) + 16% + 12px);
+  }
+
+  .caption {
+    padding-right: 128px;
+  }
+
+  /* The tab row already names the category on phones. */
+  .captionCat {
+    display: none;
+  }
+}

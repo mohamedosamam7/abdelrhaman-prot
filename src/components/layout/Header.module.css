@@ -1,0 +1,297 @@
+/* Solid header that takes the theme of the section behind it (see Header.tsx). */
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  transition:
+    background-color 400ms var(--ease),
+    color 400ms var(--ease),
+    border-color 400ms var(--ease);
+}
+
+.inner {
+  height: var(--header-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 24px;
+}
+
+.brand {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  /* comfortable touch target around a slim logo */
+  min-height: 44px;
+  color: var(--logo);
+  transition: color 400ms var(--ease);
+}
+
+.logo {
+  display: block;
+  height: 22px;
+  width: auto;
+  aspect-ratio: 244 / 48;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(22px, 2.4vw, 36px);
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  padding-block: 8px;
+}
+
+.navLink::after {
+  bottom: 4px;
+}
+
+.actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.place {
+  display: none;
+  align-items: center;
+  gap: 0.8em;
+  margin-right: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  transition:
+    border-color 300ms var(--ease),
+    background-color 300ms var(--ease);
+}
+
+.icon:hover,
+.icon:focus-visible {
+  border-color: currentColor;
+}
+
+/* Let's Talk — the inverse of the header surface, so it always stands out. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 300ms var(--ease),
+    color 300ms var(--ease);
+}
+
+.cta svg {
+  transition: transform 300ms var(--ease);
+}
+
+.cta:hover,
+.cta:focus-visible {
+  background: transparent;
+  color: var(--fg);
+}
+
+.cta:hover svg,
+.cta:focus-visible svg {
+  transform: translate(2px, -2px);
+}
+
+.cta:focus-visible,
+.icon:focus-visible,
+.menuButton:focus-visible {
+  outline-offset: 3px;
+}
+
+/* ── Mobile menu ────────────────────────────────────────────────────────── */
+
+.menuButton {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -8px;
+}
+
+.burger,
+.burger::before {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: currentColor;
+  transition: transform 300ms var(--ease);
+}
+
+.burger {
+  position: relative;
+  transform: translateY(-3.5px);
+}
+
+.burger::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+}
+
+.header[data-open] .burger {
+  transform: translateY(0) rotate(45deg);
+}
+
+.header[data-open] .burger::before {
+  transform: translateY(-7px) rotate(-90deg);
+}
+
+/* Full-height panel: a clean overlay instead of a strip over the page. */
+.menu {
+  height: calc(100svh - var(--header-h));
+  border-top: 1px solid var(--line);
+  padding-block: 8px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.menu > nav {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menuList li + li {
+  border-top: 1px solid var(--line);
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  letter-spacing: -0.01em;
+}
+
+.menuLink[aria-current="page"] {
+  font-style: italic;
+}
+
+.menuFoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.menuSocials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+.menuSocial {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+/* ── Breakpoints ────────────────────────────────────────────────────────── */
+
+@media (min-width: 1200px) {
+  .place {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .inner {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 8px;
+  }
+
+  .logo {
+    height: 19px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    border: 0;
+  }
+
+  /* 42px pill with an invisible 4px margin of extra tap area. */
+  .cta {
+    position: relative;
+    height: 42px;
+    padding: 0 15px;
+    font-size: 13px;
+  }
+
+  .cta::after {
+    content: "";
+    position: absolute;
+    inset: -4px -2px;
+  }
+
+  .menuButton {
+    display: grid;
+  }
+}
+
+/* Very small phones: Instagram moves into the menu so nothing crowds. */
+@media (max-width: 389px) {
+  .icon {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu {
+    display: none;
+  }
+}

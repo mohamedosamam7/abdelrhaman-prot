@@ -1,0 +1,33 @@
+.head {
+  row-gap: 18px;
+  align-items: end;
+}
+
+.kicker {
+  grid-column: 1 / -1;
+}
+
+.title {
+  grid-column: 1 / span 7;
+}
+
+.lead {
+  grid-column: 8 / span 5;
+  max-width: 44ch;
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.5;
+  padding-bottom: 0.6em;
+}
+
+@media (max-width: 1023px) {
+  .title,
+  .lead {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 767px) {
+  .title {
+    font-size: clamp(52px, 17vw, 88px);
+  }
+}

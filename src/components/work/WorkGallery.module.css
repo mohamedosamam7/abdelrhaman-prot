@@ -1,0 +1,151 @@
+.wrap {
+  display: grid;
+  gap: clamp(20px, 2.6vw, 36px);
+}
+
+/* ── Filters ────────────────────────────────────────────────────────────── */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background-color 300ms var(--ease),
+    color 300ms var(--ease),
+    border-color 300ms var(--ease);
+}
+
+.filter:hover {
+  border-color: var(--fg);
+}
+
+.filter[aria-current="true"] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.filterCount {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Grid ───────────────────────────────────────────────────────────────── */
+
+/* Flex rather than grid so a short last row is centred, never stranded. */
+.grid {
+  --gap-x: clamp(16px, 1.8vw, 28px);
+  --cols: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(28px, 3vw, 44px) var(--gap-x);
+}
+
+/* Two-up layouts stay narrow: the originals are ~500px wide. */
+.grid[data-cols="2"],
+.grid[data-cols="1"] {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+.item {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap-x)) / var(--cols));
+  min-width: 0;
+  max-width: 560px;
+}
+
+.card {
+  display: grid;
+  gap: 12px;
+}
+
+.media {
+  position: relative;
+  display: block;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+
+.media img {
+  object-fit: cover;
+  transition: transform 700ms var(--ease);
+}
+
+.meta {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  font-size: clamp(22px, 1.8vw, 28px);
+  line-height: 1.1;
+}
+
+.details {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (hover: hover) {
+  .card:hover .media img {
+    transform: scale(1.03);
+  }
+}
+
+.card:hover .title,
+.card:focus-visible .title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.card:focus-visible {
+  outline-offset: 6px;
+}
+
+/* ── Phone: compact two-up; an odd count leads with one full-width card ─ */
+
+@media (max-width: 767px) {
+  .grid {
+    --cols: 2 !important;
+    --gap-x: 12px;
+    row-gap: 22px;
+    justify-content: flex-start;
+  }
+
+  .grid[data-odd] .item:first-child {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .details {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .filter {
+    padding: 10px 14px;
+  }
+}
