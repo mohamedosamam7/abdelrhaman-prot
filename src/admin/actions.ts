@@ -75,7 +75,10 @@ export async function updatePassword(_: unknown, form: FormData): Promise<{ erro
   const { data } = await supabase.auth.getUser();
   if (!data.user) return { error: "expired" };
   const { error } = await supabase.auth.updateUser({ password: password.data });
-  if (error) return { error: "expired" };
+  if (error) {
+    console.error("[admin] updatePassword:", error.code ?? "", error.message);
+    return { error: error.code === "weak_password" ? "rules" : "expired" };
+  }
   return { done: true };
 }
 

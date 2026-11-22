@@ -3,9 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sessionClient } from "@/lib/supabase/server";
 
 /**
- * Landing point for links in Supabase emails (password recovery, invites).
- * Exchanges the one-time code for a session, then continues to `next`,
- * which may only be a dashboard path.
+ * Server half of /admin/auth/confirm: verifies a one-time `code` (password
+ * recovery started from this site) or `token_hash` (custom email templates)
+ * and sets the session cookie, then continues to `next` — a dashboard path only.
  */
 export async function GET(req: NextRequest) {
   const url = req.nextUrl;
