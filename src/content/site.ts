@@ -5,6 +5,7 @@
  * `placeholder: true` — replace the value and set `placeholder: false` once
  * confirmed. Placeholder biography text is not rendered on the site.
  */
+import type { Localized } from "@/i18n/config";
 import { photo } from "./photos";
 
 export interface Editable {
@@ -20,14 +21,22 @@ export const site = {
    */
   brand: { name: "E STUDIO", tagline: "Quality. Creativity. Impact." },
   name: { first: "Abdelrahman", last: "Fathy" },
+  fullName: { en: "Abdelrahman Fathy", ar: "عبدالرحمن فتحي" } satisfies Localized,
   monogram: "AF",
-  role: "Professional Photographer",
-  location: { city: "Riyadh", country: "Saudi Arabia", short: "Riyadh, SA", timeZone: "Asia/Riyadh" },
+  role: { en: "Professional Photographer", ar: "مصوّر محترف" } satisfies Localized,
+  location: {
+    city: { en: "Riyadh", ar: "الرياض" } satisfies Localized,
+    country: { en: "Saudi Arabia", ar: "المملكة العربية السعودية" } satisfies Localized,
+    short: { en: "Riyadh, SA", ar: "الرياض، السعودية" } satisfies Localized,
+    timeZone: "Asia/Riyadh",
+  },
   tagline: ["Framing", "what matters."],
   disciplinesShort: ["Events", "Sports", "Commercial", "Food"],
 
-  description:
-    "Abdelrahman Fathy — professional photographer based in Riyadh, Saudi Arabia. Event and sports photography; available for commercial and food & beverage projects.",
+  description: {
+    en: "Abdelrahman Fathy — professional photographer based in Riyadh, Saudi Arabia. Event and sports photography; available for commercial and food & beverage projects.",
+    ar: "عبدالرحمن فتحي — مصوّر محترف في الرياض. تصوير فعاليات ورياضة، ومتاح لمشاريع التصوير التجاري والأطعمة والمشروبات.",
+  } satisfies Localized,
 
 
   /** Not rendered on the homepage any more; kept for a future About page. */
@@ -43,9 +52,15 @@ export const site = {
   },
 
   contact: {
-    heading: { lead: "Have a project", emphasis: "in mind?" },
-    subheading: "Let’s create something worth seeing.",
-    body: "Send a message on Instagram or explore more of the work on Behance.",
+    heading: {
+      en: { lead: "Have a project", emphasis: "in mind?" },
+      ar: { lead: "عندك", emphasis: "مشروع؟" },
+    } satisfies Localized<{ lead: string; emphasis: string }>,
+    subheading: { en: "Let’s create something worth seeing.", ar: "نصنع معك صورًا تستحق أن تُرى." } satisfies Localized,
+    body: {
+      en: "Send a message on Instagram or explore more of the work on Behance.",
+      ar: "راسلنا على إنستغرام، أو تصفّح المزيد من أعمالنا على بيهانس.",
+    } satisfies Localized,
     /** Used by the "Let’s Talk" header button. */
     page: "/contact",
     /**
@@ -69,7 +84,10 @@ export const site = {
       value: "",
       display: "",
       placeholder: true,
-      message: "Hello Abdelrahman, I’d like to discuss a photography project.",
+      message: {
+        en: "Hello Abdelrahman, I’d like to discuss a photography project.",
+        ar: "السلام عليكم، حاب أستفسر عن مشروع تصوير.",
+      } satisfies Localized,
     },
     /** Shown wherever a contact detail is still missing. */
     missing: "[Placeholder until provided]",

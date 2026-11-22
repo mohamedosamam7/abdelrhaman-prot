@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, PlayIcon } from "@/components/Icons";
+import { getDictionary, type Dictionary, type Locale } from "@/i18n";
 import styles from "./SelectedFrames.module.css";
 
 export interface Frame {
@@ -32,6 +33,7 @@ export interface FrameCategory {
 }
 
 interface Props {
+  lang: Locale;
   frames: Frame[];
   categories: FrameCategory[];
   /** ms each frame stays before autoplay moves on. */
@@ -51,8 +53,15 @@ const pad = (n: number) => String(n).padStart(2, "0");
  *   paused while hovered, focused, dragged, offscreen, tab hidden or a video
  *   plays; resumes IDLE_MS after the last manual navigation; never runs
  *   with prefers-reduced-motion.
+ *
+ * Right-to-left: the track runs from the right edge and the browser reports
+ * scrollLeft as 0 → negative, so every position below is a distance from the
+ * start (`dir` = −1 converts to and from the physical value).
  */
-export function FramesCarousel({ frames, categories, interval }: Props) {
+export function FramesCarousel({ lang, frames, categories, interval }: Props) {
+  const t = getDictionary(lang);
+  const rtl = lang === "ar";
+  const dir = rtl ? -1 : 1;
   const wrapRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -74,18 +83,20 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
     const t = trackRef.current!;
     return t.scrollWidth - t.clientWidth;
   };
+  /** Distance scrolled from the start, in either direction. */
+  const pos = () => Math.abs(trackRef.current?.scrollLeft ?? 0);
   const offsetOf = (i: number) => {
     const els = items();
-    return els[i] ? els[i].offsetLeft - els[0].offsetLeft : 0;
+    return els[i] ? Math.abs(els[i].offsetLeft - els[0].offsetLeft) : 0;
   };
 
   const goTo = useCallback((i: number, smooth = true) => {
-    const t = trackRef.current;
-    if (!t) return;
+    const track = trackRef.current;
+    if (!track) return;
     const left = Math.min(offsetOf(Math.max(0, Math.min(count - 1, i))), maxScroll());
-    t.scrollTo({ left, behavior: smooth && !st.current.reduce ? "smooth" : "auto" });
+    track.scrollTo({ left: left * dir, behavior: smooth && !st.current.reduce ? "smooth" : "auto" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [count]);
+  }, [count, dir]);
 
   /** Back to the start without a long rewind: fade out, jump, fade in. */
   const loopToStart = useCallback(() => {
@@ -98,9 +109,8 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
   }, [goTo]);
 
   const advance = useCallback(() => {
-    const t = trackRef.current;
-    if (!t) return;
-    if (t.scrollLeft >= maxScroll() - 4) loopToStart();
+    if (!trackRef.current) return;
+    if (pos() >= maxScroll() - 4) loopToStart();
     else goTo(st.current.index + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goTo, loopToStart]);
@@ -120,13 +130,13 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
     const update = () => {
       raf = 0;
       const max = maxScroll();
-      const end = t.scrollLeft >= max - 4;
+      const end = pos() >= max - 4;
       let best = 0;
       if (end && max > 0) best = count - 1;
       else {
         let dist = Infinity;
         items().forEach((_, i) => {
-          const d = Math.abs(offsetOf(i) - t.scrollLeft);
+          const d = Math.abs(offsetOf(i) - pos());
           if (d < dist) [dist, best] = [d, i];
         });
       }
@@ -316,10 +326,10 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
     const row = tabsRef.current;
     const btn = row?.querySelector<HTMLElement>(`[data-cat="${activeCat}"]`);
     if (!row || !btn) return;
-    const left = btn.offsetLeft - row.offsetLeft;
-    if (left < row.scrollLeft || left + btn.offsetWidth > row.scrollLeft + row.clientWidth) {
-      row.scrollTo({ left: Math.max(0, left - 16), behavior: st.current.reduce ? "auto" : "smooth" });
-    }
+    const r = row.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    const by = b.left < r.left ? b.left - r.left - 16 : b.right > r.right ? b.right - r.right + 16 : 0;
+    if (by) row.scrollBy({ left: by, behavior: st.current.reduce ? "auto" : "smooth" });
   }, [activeCat]);
 
   /* ── Controls ─────────────────────────────────────────────────────────── */
@@ -338,13 +348,10 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if ((e.target as HTMLElement).closest("video")) return;
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      next();
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      prev();
-    }
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    if ((e.key === "ArrowRight") !== rtl) next();
+    else prev();
   };
 
   return (
@@ -353,7 +360,7 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
       className={styles.carousel}
       role="region"
       aria-roledescription="carousel"
-      aria-label="Selected frames"
+      aria-label={t.frames.carousel}
       onKeyDown={onKeyDown}
       onFocus={() => (st.current.focus = true)}
       onBlur={(e) => {
@@ -361,7 +368,7 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
       }}
     >
       <div className={`container ${styles.bar}`}>
-        <div ref={tabsRef} className={styles.tabs} aria-label="Jump to category" role="group">
+        <div ref={tabsRef} className={styles.tabs} aria-label={t.frames.jump} role="group">
           {categories.map((c) => (
             <button
               key={c.key}
@@ -377,9 +384,11 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
           ))}
         </div>
         <p className={styles.counter}>
-          <span className="sr-only">Frame </span>
-          {pad(index + 1)} <span aria-hidden="true">/</span>
-          <span className="sr-only"> of </span> {pad(count)}
+          <span className="sr-only">{t.frames.frame} </span>
+          <bdi dir="ltr">
+            {pad(index + 1)} <span aria-hidden="true">/</span>
+            <span className="sr-only"> {t.frames.of} </span> {pad(count)}
+          </bdi>
         </p>
       </div>
 
@@ -409,23 +418,23 @@ export function FramesCarousel({ frames, categories, interval }: Props) {
               key={f.id}
               className={styles.card}
               aria-roledescription="slide"
-              aria-label={`${i + 1} of ${count}: ${f.title}`}
+              aria-label={t.frames.slide(i + 1, count, f.title)}
               data-active={i === index || undefined}
             >
               {f.type === "video" ? (
-                <VideoCard frame={f} onPlay={onVideoPlay} onStop={onVideoStop} />
+                <VideoCard t={t} frame={f} onPlay={onVideoPlay} onStop={onVideoStop} />
               ) : (
-                <ImageCard frame={f} />
+                <ImageCard t={t} frame={f} />
               )}
             </li>
           ))}
         </ul>
 
-        <button type="button" className={`${styles.nav} ${styles.prev}`} onClick={prev} disabled={index === 0} aria-label="Previous frame">
-          <ChevronLeft />
+        <button type="button" className={`${styles.nav} ${styles.prev}`} onClick={prev} disabled={index === 0} aria-label={t.frames.prev}>
+          <ChevronLeft className="dir-icon" />
         </button>
-        <button type="button" className={`${styles.nav} ${styles.next}`} onClick={next} aria-label={atEnd ? "Back to first frame" : "Next frame"}>
-          <ChevronRight />
+        <button type="button" className={`${styles.nav} ${styles.next}`} onClick={next} aria-label={atEnd ? t.frames.first : t.frames.next}>
+          <ChevronRight className="dir-icon" />
         </button>
       </div>
     </div>
@@ -441,7 +450,7 @@ function Caption({ frame }: { frame: Frame }) {
   );
 }
 
-function ImageCard({ frame }: { frame: Frame }) {
+function ImageCard({ t, frame }: { t: Dictionary; frame: Frame }) {
   const media = (
     <>
       <span className={styles.media}>
@@ -461,7 +470,7 @@ function ImageCard({ frame }: { frame: Frame }) {
   return frame.href ? (
     <Link href={frame.href} className={styles.cardLink} draggable={false}>
       {media}
-      <span className="sr-only"> — view project</span>
+      <span className="sr-only"> — {t.frames.viewProject}</span>
     </Link>
   ) : (
     <div className={styles.cardLink}>{media}</div>
@@ -472,7 +481,7 @@ function ImageCard({ frame }: { frame: Frame }) {
  * Poster + play button until the visitor asks for the video; only then is
  * the file requested. Plays with native controls and sound — never on its own.
  */
-function VideoCard({ frame, onPlay, onStop }: { frame: Frame; onPlay: (v: HTMLVideoElement) => void; onStop: () => void }) {
+function VideoCard({ t, frame, onPlay, onStop }: { t: Dictionary; frame: Frame; onPlay: (v: HTMLVideoElement) => void; onStop: () => void }) {
   const [started, setStarted] = useState(false);
 
   return (
@@ -506,7 +515,7 @@ function VideoCard({ frame, onPlay, onStop }: { frame: Frame; onPlay: (v: HTMLVi
             )}
             <button type="button" className={styles.play} onClick={() => setStarted(true)}>
               <PlayIcon />
-              <span className="sr-only">Play video: {frame.title}</span>
+              <span className="sr-only">{t.frames.play(frame.title)}</span>
             </button>
           </>
         )}
@@ -514,7 +523,7 @@ function VideoCard({ frame, onPlay, onStop }: { frame: Frame; onPlay: (v: HTMLVi
       {!started && <Caption frame={frame} />}
       {started && frame.href && (
         <Link href={frame.href} className={styles.videoLink}>
-          View project
+          {t.frames.viewProjectButton}
         </Link>
       )}
     </div>

@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, BehanceIcon, InstagramIcon } from "@/components/Icons";
 import { site } from "@/content/site";
+import { getDictionary, tr, type Locale } from "@/i18n";
 import { emailHref, whatsappHref } from "@/lib/contact";
+import { Words, wordCount } from "@/components/Words";
 import styles from "./ContactCTA.module.css";
 
 interface Props {
+  lang: Locale;
   /** h1 on the Contact page, h2 where it closes another page. */
   as?: "h1" | "h2";
   /** Contact page only: confirmed email / WhatsApp and location beneath the buttons. */
@@ -20,53 +23,59 @@ interface Props {
  * Behance secondary. Every URL comes from site.contact. Content is never
  * hidden behind a reveal animation: this is the page's main action.
  */
-export function ContactCTA({ as: Heading = "h2", details = false, context, footer }: Props) {
+export function ContactCTA({ lang, as: Heading = "h2", details = false, context, footer }: Props) {
   const c = site.contact;
+  const t = getDictionary(lang);
+  const heading = tr(lang, c.heading);
   const behance = !c.behance.placeholder && c.behance.url ? c.behance : null;
   const channels = [
-    emailHref && { label: "Email", value: c.email.value, href: emailHref },
-    whatsappHref && { label: "WhatsApp", value: c.whatsapp.display || c.whatsapp.value, href: whatsappHref },
+    emailHref && { label: t.contact.email, value: c.email.value, href: emailHref },
+    whatsappHref && { label: t.contact.whatsapp, value: c.whatsapp.display || c.whatsapp.value, href: whatsappHref(lang) },
   ].filter(Boolean) as { label: string; value: string; href: string }[];
 
   return (
     <section className={`theme-dark ${styles.contact}`} id="contact" aria-labelledby="contact-heading">
       <div className="container">
         <div className={styles.top}>
-          <p className="t-label">Contact</p>
-          <p className={`t-label ${styles.topRight}`}>Instagram · Behance</p>
+          <p className="t-label">{t.contact.label}</p>
+          <p className={`t-label ${styles.topRight}`}>{t.contact.channels}</p>
         </div>
 
-        <Heading id="contact-heading" className={`t-serif ${styles.heading}`}>
-          {c.heading.lead} <em className={styles.em}>{c.heading.emphasis}</em>
+        <Heading id="contact-heading" className={`t-serif ${styles.heading}`} data-reveal="words">
+          <Words text={heading.lead} /> <em className={styles.em}><Words text={heading.emphasis} start={wordCount(heading.lead)} /></em>
         </Heading>
 
         <div className={styles.grid}>
           <div className={styles.intro}>
-            <p className={`t-serif ${styles.sub}`}>{c.subheading}</p>
+            <p className={`t-serif ${styles.sub}`}>{tr(lang, c.subheading)}</p>
             {context}
-            <p className="muted">{c.body}</p>
+            <p className="muted">{tr(lang, c.body)}</p>
           </div>
 
           <div className={styles.buttons}>
             <a className={`${styles.button} ${styles.primary}`} href={c.instagram.url} target="_blank" rel="noopener noreferrer">
               <InstagramIcon className={styles.icon} />
               <span className={styles.text}>
-                <span className={styles.title}>Message on Instagram</span>
-                <span className={styles.meta}>Instagram · {c.instagram.handle}</span>
+                <span className={styles.title}>{t.contact.instagram}</span>
+                <span className={styles.meta}>
+                  Instagram · <bdi>{c.instagram.handle}</bdi>
+                </span>
               </span>
-              <ArrowUpRight className={styles.arrow} size={18} />
-              <span className="sr-only"> (opens in a new tab)</span>
+              <ArrowUpRight className={`dir-icon ${styles.arrow}`} size={18} />
+              <span className="sr-only"> {t.newTab}</span>
             </a>
 
             {behance && (
               <a className={styles.button} href={behance.url} target="_blank" rel="noopener noreferrer">
                 <BehanceIcon className={styles.icon} />
                 <span className={styles.text}>
-                  <span className={styles.title}>View on Behance</span>
-                  <span className={styles.meta}>Behance · {behance.handle}</span>
+                  <span className={styles.title}>{t.contact.behance}</span>
+                  <span className={styles.meta}>
+                    Behance · <bdi>{behance.handle}</bdi>
+                  </span>
                 </span>
-                <ArrowUpRight className={styles.arrow} size={18} />
-                <span className="sr-only"> (opens in a new tab)</span>
+                <ArrowUpRight className={`dir-icon ${styles.arrow}`} size={18} />
+                <span className="sr-only"> {t.newTab}</span>
               </a>
             )}
           </div>
@@ -78,16 +87,18 @@ export function ContactCTA({ as: Heading = "h2", details = false, context, foote
               <div key={ch.label}>
                 <dt className="t-label">{ch.label}</dt>
                 <dd>
-                  <a className="link-line" href={ch.href}>
+                  <a className="link-line" href={ch.href} dir="ltr">
                     {ch.value}
                   </a>
                 </dd>
               </div>
             ))}
             <div>
-              <dt className="t-label">Based in</dt>
+              <dt className="t-label">{t.contact.basedIn}</dt>
               <dd>
-                {site.location.city}, {site.location.country}
+                {tr(lang, site.location.city)}
+                {lang === "ar" ? "، " : ", "}
+                {tr(lang, site.location.country)}
               </dd>
             </div>
           </dl>

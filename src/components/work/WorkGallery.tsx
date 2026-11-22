@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
+import { getDictionary, type Locale } from "@/i18n";
 import styles from "./WorkGallery.module.css";
 
 export interface WorkCard {
@@ -12,7 +13,8 @@ export interface WorkCard {
   title: string;
   category: string;
   categoryLabel: string;
-  count: number;
+  /** Localized frame count, e.g. "12 frames". */
+  frames: string;
   cover: { src: string; alt: string; position?: string; original?: boolean };
 }
 
@@ -22,17 +24,26 @@ export interface WorkFilter {
   count: number;
 }
 
+export interface WorkLabels {
+  all: string;
+  filterLabel: string;
+  /** Localized /work path the filter links build on. */
+  base: string;
+}
+
 interface ViewProps {
+  lang: Locale;
   cards: WorkCard[];
   filters: WorkFilter[];
+  labels: WorkLabels;
   active: string;
 }
 
 /** Reads the active filter from the URL (?category=events). */
-export function WorkGallery({ cards, filters }: Omit<ViewProps, "active">) {
+export function WorkGallery(props: Omit<ViewProps, "active">) {
   const requested = useSearchParams().get("category");
-  const active = filters.some((f) => f.key === requested) ? requested! : "all";
-  return <WorkGalleryView cards={cards} filters={filters} active={active} />;
+  const active = props.filters.some((f) => f.key === requested) ? requested! : "all";
+  return <WorkGalleryView {...props} active={active} />;
 }
 
 /**
@@ -44,17 +55,17 @@ export function WorkGallery({ cards, filters }: Omit<ViewProps, "active">) {
  * 3 columns with a centred last row; on phones an odd count makes the first
  * card full width.
  */
-export function WorkGalleryView({ cards, filters, active }: ViewProps) {
+export function WorkGalleryView({ lang, cards, filters, labels, active }: ViewProps) {
   const shown = active === "all" ? cards : cards.filter((c) => c.category === active);
   const cols = shown.length === 4 || shown.length === 2 ? 2 : shown.length === 1 ? 1 : 3;
 
   return (
     <div className={styles.wrap}>
-      <nav className={styles.filters} aria-label="Filter projects by category">
-        {[{ key: "all", label: "All work", count: cards.length }, ...filters].map((f) => (
+      <nav className={styles.filters} aria-label={labels.filterLabel}>
+        {[{ key: "all", label: labels.all, count: cards.length }, ...filters].map((f) => (
           <Link
             key={f.key}
-            href={f.key === "all" ? "/work" : `/work?category=${f.key}`}
+            href={f.key === "all" ? labels.base : `${labels.base}?category=${f.key}`}
             scroll={false}
             className={styles.filter}
             aria-current={active === f.key ? "true" : undefined}
@@ -66,7 +77,7 @@ export function WorkGalleryView({ cards, filters, active }: ViewProps) {
       </nav>
 
       <p className="sr-only" aria-live="polite">
-        Showing {shown.length} {shown.length === 1 ? "project" : "projects"}
+        {getDictionary(lang).work.showing(shown.length)}
       </p>
 
       <ul
@@ -92,7 +103,7 @@ export function WorkGalleryView({ cards, filters, active }: ViewProps) {
               <span className={styles.meta}>
                 <span className={`t-serif ${styles.title}`}>{c.title}</span>
                 <span className={styles.details}>
-                  {c.categoryLabel} · {c.count} frames
+                  {c.categoryLabel} · {c.frames}
                 </span>
               </span>
             </Link>

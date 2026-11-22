@@ -30,7 +30,7 @@ All content lives in `src/content/`. You never need to touch the components.
 | --- | --- |
 | `photos.ts` | Every photograph: `src`, `width`, `height`, `alt`, `position` (crop focus) |
 | `projects.ts` | Projects: title, category, year, cover, `images` (detail page) and `highlights` (Work page) |
-| `home.ts` | Hero frames; **Selected frames** gallery items (images and videos, order, categories, project links); services rows; the "Every frame" section copy and photo |
+| `home.ts` | Hero photo slots (`heroSlots`: photo, portrait 4:5 / landscape 3:2, focal point, desktop/tablet/mobile placement); **Selected frames** gallery items (images and videos, order, categories, project links); services rows; the "Every frame" section copy and photo |
 | `disciplines.ts` | The four disciplines, their titles and gallery tab labels |
 | `site.ts` | Brand, name, location, copy, and **all social/contact URLs** (Instagram, Behance, email, WhatsApp) |
 

@@ -1,5 +1,6 @@
 .contact {
   padding-block: clamp(40px, 5vw, 80px) clamp(56px, 7vw, 112px);
+  background: var(--grad-contact);
 }
 
 .top {
@@ -163,5 +164,22 @@ a.button:focus-visible .arrow {
 
   .title {
     font-size: 15px;
+  }
+}
+
+/* Arabic: "عندك مشروع؟" reads as one phrase, so it stays on one line instead
+   of the English two-line stack, at a size suited to Amiri's taller forms. */
+:global(html[lang="ar"]) .heading {
+  max-width: none;
+  line-height: 1.25;
+}
+
+:global(html[lang="ar"]) .em {
+  display: inline;
+}
+
+@media (max-width: 767px) {
+  :global(html[lang="ar"]) .heading {
+    font-size: clamp(46px, 14vw, 64px);
   }
 }

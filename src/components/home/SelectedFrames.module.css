@@ -1,4 +1,5 @@
 .section {
+  background: var(--grad-section);
   padding-block: clamp(56px, 7vw, 112px) clamp(48px, 6vw, 96px);
   overflow: hidden;
 }
@@ -31,7 +32,7 @@
   display: grid;
   justify-items: end;
   gap: 16px;
-  text-align: right;
+  text-align: end;
   font-size: 15px;
   line-height: 1.5;
 }
@@ -55,7 +56,7 @@
 
 .all:hover svg,
 .all:focus-visible svg {
-  transform: translateX(3px);
+  transform: translateX(calc(3px * var(--dir)));
 }
 
 /* ── Category bar ───────────────────────────────────────────────────────── */
@@ -79,6 +80,7 @@
   gap: clamp(18px, 2vw, 32px);
   min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
 }
 
@@ -102,13 +104,13 @@
 .tab::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 6px;
   height: 1px;
   background: currentColor;
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: var(--start);
   transition: transform 500ms var(--ease);
 }
 
@@ -149,6 +151,9 @@
   display: flex;
   gap: 2px;
   overflow-x: auto;
+  /* Never a vertical scroller: a 1px rounding overflow would otherwise make a
+     vertical swipe that starts on the gallery latch here instead of the page. */
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--track-pad);
@@ -218,12 +223,12 @@
   position: absolute;
   z-index: 2;
   top: 0;
-  left: var(--track-pad);
+  inset-inline-start: var(--track-pad);
   width: calc((100% - 2 * var(--track-pad)) * var(--card-frac, 0.25));
   height: 2px;
   background: var(--accent);
   transform: scaleX(var(--p, 0));
-  transform-origin: left;
+  transform-origin: var(--start);
   pointer-events: none;
 }
 
@@ -291,7 +296,7 @@
 }
 
 .play svg {
-  margin-left: 3px;
+  margin-left: 3px; /* physical: icon is never mirrored */
 }
 
 .play:hover,
@@ -302,7 +307,7 @@
 .videoLink {
   position: absolute;
   top: 12px;
-  right: 12px;
+  inset-inline-end: 12px;
   padding: 6px 12px;
   border-radius: 999px;
   background: rgba(46, 10, 16, 0.72);
@@ -342,11 +347,11 @@
 }
 
 .prev {
-  left: max(var(--gutter), 16px);
+  inset-inline-start: max(var(--gutter), 16px);
 }
 
 .next {
-  right: max(var(--gutter), 16px);
+  inset-inline-end: max(var(--gutter), 16px);
 }
 
 /* ── Tablet ─────────────────────────────────────────────────────────────── */
@@ -396,7 +401,7 @@
 
   .aside {
     justify-items: start;
-    text-align: left;
+    text-align: start;
     gap: 4px;
   }
 
@@ -406,13 +411,13 @@
 
   .tabs {
     /* let the tab row run edge to edge without widening the page */
-    margin-left: calc(var(--gutter) * -1);
-    padding-left: var(--gutter);
+    margin-inline-start: calc(var(--gutter) * -1);
+    padding-inline-start: var(--gutter);
     gap: 20px;
   }
 
   .counter {
-    padding-left: 8px;
+    padding-inline-start: 8px;
   }
 
   .track {
@@ -428,16 +433,16 @@
   }
 
   .prev {
-    left: auto;
-    right: calc(var(--gutter) + 16% + 64px);
+    inset-inline-start: auto;
+    inset-inline-end: calc(var(--gutter) + 16% + 64px);
   }
 
   .next {
-    right: calc(var(--gutter) + 16% + 12px);
+    inset-inline-end: calc(var(--gutter) + 16% + 12px);
   }
 
   .caption {
-    padding-right: 128px;
+    padding-inline-end: 128px;
   }
 
   /* The tab row already names the category on phones. */

@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
    * resources for that origin and the page never hydrates. Update the IP if
    * the network address changes (shown as "Network:" when `npm run dev` starts).
    */
-  allowedDevOrigins: ["192.168.1.70", "172.20.10.8"],
+  allowedDevOrigins: ["192.168.1.9", "192.168.1.70", "172.20.10.8"],
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 828, 1080, 1280, 1600, 2048],

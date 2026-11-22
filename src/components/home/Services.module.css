@@ -1,4 +1,5 @@
 .section {
+  background: var(--grad-section);
   padding-block: clamp(56px, 7vw, 112px);
 }
 
@@ -42,13 +43,13 @@
 .row::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: -1px;
   height: 1px;
   background: var(--accent);
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: var(--start);
   transition: transform 700ms var(--ease);
 }
 
@@ -112,7 +113,7 @@
 
 .row:hover .title,
 .row:focus-visible .title {
-  transform: translateX(8px);
+  transform: translateX(calc(8px * var(--dir)));
 }
 
 .row:hover .arrow,
@@ -177,7 +178,7 @@
     grid-column: 2;
     grid-row: 3;
     justify-self: start;
-    margin-left: -2px;
+    margin-inline-start: -2px;
   }
 
   .arrow {

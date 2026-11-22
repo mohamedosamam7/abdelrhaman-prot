@@ -2,27 +2,74 @@
  * HOME PAGE CURATION — which photographs, videos and copy appear where.
  * Change the selection here; the layouts stay the same.
  */
+import type { Localized } from "@/i18n/config";
 import type { DisciplineKey } from "./disciplines";
 import { photo } from "./photos";
 
+/* ── Hero — lens intro + photo composition ──────────────────────────────── */
+
 /**
- * Hero contact sheet — 8 frames. Each position has a fixed shape on the
- * editorial grid, so choose photographs that suit it:
- *   0 narrow portrait (left edge)   1 landscape        2 square
- *   3 portrait                      4 narrow portrait (right edge)
- *   5 landscape                     6 square           7 wide landscape
- * Frames 4 and 6 are dropped on phones.
+ * Only two slot shapes exist, and at any screen size every photo of the same
+ * shape is shown at exactly the same size (set by shared tokens in
+ * HeroPhotographyGrid.module.css — there are no per-photo sizes):
+ *   portrait   4:5   — supply 1200 × 1500 px (or larger at the same ratio)
+ *   landscape  3:2   — supply 1500 × 1000 px (or larger at the same ratio)
+ * Images are cropped with object-fit: cover; `focus` is the CSS
+ * object-position (x% y%) that keeps the subject in frame.
+ *
+ * `heroRows` lists, per layout, which slots sit in each row (left → right).
+ *   desktop (≥1024px)  two staggered rows of four  — 8 photos
+ *   tablet  (600–1023) P L P / L P L               — 6 photos
+ *   mobile  (<600px)   two portraits, landscape below — 3 photos
  */
-export const heroPhotos = [
-  photo("p6-r1c5"),
-  photo("p6-r2c3"),
-  photo("p9-r2c1"),
-  photo("p5-r2c1"),
-  photo("p7-r2c1"),
-  photo("p2-r3c3"),
-  photo("p6-r2c4"),
-  photo("p4-r3c5"),
+export type HeroSlotType = "portrait" | "landscape";
+export type HeroLayout = "desktop" | "tablet" | "mobile";
+
+export const heroSlotSpec: Record<HeroSlotType, { ratio: string; value: number; source: string }> = {
+  portrait: { ratio: "4:5", value: 4 / 5, source: "1200 × 1500 px" },
+  landscape: { ratio: "3:2", value: 3 / 2, source: "1500 × 1000 px" },
+};
+
+export interface HeroSlot {
+  id: string;
+  /** Photo id from photos.ts (temporary: PDF-extracted, ~450–540px wide). */
+  photo: string;
+  type: HeroSlotType;
+  /** object-position for the crop, e.g. "50% 35%". */
+  focus: string;
+}
+
+export const heroSlots: HeroSlot[] = [
+  { id: "L1", photo: "p6-r2c3", type: "landscape", focus: "50% 45%" },
+  { id: "P1", photo: "p5-r2c1", type: "portrait", focus: "38% 40%" },
+  { id: "L2", photo: "p4-r3c5", type: "landscape", focus: "50% 62%" },
+  { id: "P2", photo: "p9-r2c1", type: "portrait", focus: "48% 45%" },
+  { id: "P3", photo: "p7-r2c1", type: "portrait", focus: "45% 40%" },
+  { id: "L3", photo: "p6-r2c4", type: "landscape", focus: "50% 40%" },
+  { id: "P4", photo: "p1-r3c1", type: "portrait", focus: "52% 40%" },
+  { id: "L4", photo: "p3-r2c1", type: "landscape", focus: "50% 50%" },
 ];
+
+export const heroRows: Record<HeroLayout, string[][]> = {
+  desktop: [
+    ["L1", "P1", "L2", "P2"],
+    ["P3", "L3", "P4", "L4"],
+  ],
+  tablet: [
+    ["P1", "L1", "P2"],
+    ["L2", "P4", "L3"],
+  ],
+  mobile: [["P1", "P4"], ["L1"]],
+};
+
+export const heroCopy = {
+  /** The page's h1 — keeps the photographer's name in the content. */
+  title: { en: "Abdelrahman Fathy — Professional Photographer", ar: "عبدالرحمن فتحي — مصوّر محترف" } satisfies Localized,
+  meta: {
+    en: "Riyadh, Saudi Arabia · Events / Sports / Commercial / Food",
+    ar: "الرياض، السعودية · فعاليات / رياضة / تجاري / أطعمة ومشروبات",
+  } satisfies Localized,
+};
 
 /* ── (01) Selected frames — horizontal gallery ──────────────────────────── */
 
@@ -35,7 +82,8 @@ export const heroPhotos = [
  *             video: a file path (e.g. "/video/reel-01.mp4") or full URL
  *   poster    video only — a photo id shown before playback (recommended;
  *             without it the card shows a plain frame with a play button)
- *   title     caption on the card
+ *   title     caption on the card (English fallback; the card shows the
+ *             linked project's localized title when `project` is set)
  *   category  which tab the item belongs to (see disciplines.ts)
  *   project   optional project slug — the card then links to that project
  *
@@ -78,9 +126,15 @@ export const selectedFrames: FrameItem[] = [
 ];
 
 export const selectedFramesCopy = {
-  label: "(01) — Selected work",
-  heading: { lead: "Selected", emphasis: "frames" },
-  body: "Events and sports across Riyadh — hosts, crowds and the moments in between, in one continuous edit.",
+  label: { en: "(01) — Selected work", ar: "(01) — أعمال مختارة" } satisfies Localized,
+  heading: {
+    en: { lead: "Selected", emphasis: "frames" },
+    ar: { lead: "لقطات", emphasis: "مختارة" },
+  } satisfies Localized<{ lead: string; emphasis: string }>,
+  body: {
+    en: "Events and sports across Riyadh — hosts, crowds and the moments in between, in one continuous edit.",
+    ar: "فعاليات ورياضة من قلب الرياض: الضيوف والجمهور وكل اللحظات بينهما، في مشهد واحد متصل.",
+  } satisfies Localized,
   /** Seconds each frame stays before the gallery moves on. */
   interval: 5,
 };
@@ -88,8 +142,11 @@ export const selectedFramesCopy = {
 /* ── (02) Services ──────────────────────────────────────────────────────── */
 
 export const services = {
-  label: "(02) — Focus",
-  heading: { lead: "Three ways of looking,", emphasis: "one standard of light." },
+  label: { en: "(02) — Focus", ar: "(02) — خدماتنا" } satisfies Localized,
+  heading: {
+    en: { lead: "Three ways of looking,", emphasis: "one standard of light." },
+    ar: { lead: "ثلاثة مجالات،", emphasis: "ومعيار واحد للضوء." },
+  } satisfies Localized<{ lead: string; emphasis: string }>,
   /**
    * `key` names the service in /contact?service=… links. A row links to the
    * Work page only where real work exists; otherwise it starts an enquiry.
@@ -98,26 +155,35 @@ export const services = {
     {
       key: "commercial",
       index: "01",
-      title: "Commercial & Product",
-      description: "Products, packaging and brand still life — lit to show material, form and detail.",
+      title: { en: "Commercial & Product", ar: "تجاري ومنتجات" },
+      description: {
+        en: "Products, packaging and brand still life — lit to show material, form and detail.",
+        ar: "المنتجات والتغليف وصور العلامات التجارية، بإضاءة تُظهر الخامة والشكل والتفاصيل.",
+      },
       href: "/contact?service=commercial",
-      cta: "Enquire",
+      cta: { en: "Enquire", ar: "استفسر" },
     },
     {
       key: "food",
       index: "02",
-      title: "Food & Beverage",
-      description: "Plates, pours and hands-in-frame moments that make a menu feel tangible.",
+      title: { en: "Food & Beverage", ar: "أطعمة ومشروبات" },
+      description: {
+        en: "Plates, pours and hands-in-frame moments that make a menu feel tangible.",
+        ar: "أطباق ومشروبات ولحظات تقديم تجعل قائمتك ملموسة.",
+      },
       href: "/contact?service=food",
-      cta: "Enquire",
+      cta: { en: "Enquire", ar: "استفسر" },
     },
     {
       key: "events",
       index: "03",
-      title: "Events & Sports",
-      description: "Atmosphere, people and peak moments at live activations, venues and matches.",
+      title: { en: "Events & Sports", ar: "فعاليات ورياضة" },
+      description: {
+        en: "Atmosphere, people and peak moments at live activations, venues and matches.",
+        ar: "الأجواء والناس وأقوى اللحظات في الفعاليات والمواقع والمباريات.",
+      },
       href: "/work",
-      cta: "View work",
+      cta: { en: "View work", ar: "تصفّح الأعمال" },
     },
   ],
 };
@@ -125,15 +191,21 @@ export const services = {
 /* ── (03) Every frame should say something ──────────────────────────────── */
 
 export const approach = {
-  label: "(03) — Approach",
-  heading: { lead: "Every frame should", emphasis: "say something." },
-  body: "I focus on light, detail, and the atmosphere that makes a story memorable.",
+  label: { en: "(03) — Approach", ar: "(03) — أسلوبنا" } satisfies Localized,
+  heading: {
+    en: { lead: "Every frame should", emphasis: "say something." },
+    ar: { lead: "كل لقطة", emphasis: "لها ما تقوله." },
+  } satisfies Localized<{ lead: string; emphasis: string }>,
+  body: {
+    en: "I focus on light, detail, and the atmosphere that makes a story memorable.",
+    ar: "نركّز على الضوء والتفاصيل والأجواء التي تجعل القصة تبقى في الذاكرة.",
+  } satisfies Localized,
   /** Vertical image beside the heading (source is ~450px wide — see README). */
   photo: photo("p2-r2c2"),
-  caption: "F/— Light study",
+  caption: { en: "F/— Light study", ar: "F/— دراسة ضوء" } satisfies Localized,
   points: [
-    { index: "01", title: "Light", text: "Shaped deliberately, never left to chance." },
-    { index: "02", title: "Detail", text: "Texture, material and the small gestures." },
-    { index: "03", title: "Atmosphere", text: "The feeling of being in the room." },
-  ],
+    { index: "01", title: { en: "Light", ar: "الضوء" }, text: { en: "Shaped deliberately, never left to chance.", ar: "نشكّله بعناية، ولا نتركه للصدفة." } },
+    { index: "02", title: { en: "Detail", ar: "التفاصيل" }, text: { en: "Texture, material and the small gestures.", ar: "الملمس والخامة والإيماءات الصغيرة." } },
+    { index: "03", title: { en: "Atmosphere", ar: "الأجواء" }, text: { en: "The feeling of being in the room.", ar: "إحساس أنك في قلب المكان." } },
+  ] satisfies { index: string; title: Localized; text: Localized }[],
 };

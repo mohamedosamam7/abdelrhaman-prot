@@ -14,12 +14,13 @@
  * A project gets a detail page when it has at least DETAIL_MIN images
  * (pages show at most DETAIL_MAX).
  */
+import type { Localized } from "@/i18n/config";
 import { photo, type Photo } from "./photos";
 import type { DisciplineKey } from "./disciplines";
 
 export interface Project {
   slug: string;
-  title: string;
+  title: Localized;
   category: DisciplineKey;
   /** Optional — leave out until confirmed; nothing is shown when absent. */
   year?: string;
@@ -41,36 +42,36 @@ const set = (prefix: string, count: number) =>
 const pick = (...ids: string[]) => ids.map(photo);
 
 /** A real project: cover first, then the rest of the frames. */
-function real(slug: string, title: string, category: DisciplineKey, ids: string[]): Project {
+function real(slug: string, title: Localized, category: DisciplineKey, ids: string[]): Project {
   const images = pick(...ids);
   return { slug, title, category, cover: images[0], images, placeholder: false };
 }
 
 export const projects: Project[] = [
   // ── Client work (PEAK portfolio PDF; page noted for each) ────────────────
-  real("heritage-nights", "Heritage Nights", "events", // p1
+  real("heritage-nights", { en: "Heritage Nights", ar: "ليالي التراث" }, "events", // p1
     ["p1-r1c3", "p1-r1c1", "p1-r1c4", "p1-r2c3", "p1-r1c5", "p1-r2c4", "p1-r3c1", "p1-r3c2", "p1-r3c3", "p1-r3c5", "p1-r1c2", "p1-r2c1"]),
-  real("matchday-at-the-arena", "Matchday at the Arena", "sports", // p4
+  real("matchday-at-the-arena", { en: "Matchday at the Arena", ar: "يوم المباراة في الملعب" }, "sports", // p4
     ["p4-r2c3", "p4-r1c1", "p4-r1c2", "p4-r1c3", "p4-r1c4", "p4-r1c5", "p4-r2c2", "p4-r2c4", "p4-r3c2", "p4-r3c3", "p4-r3c4", "p4-r3c5"]),
-  real("concert-night", "Concert Night", "events", // p5
+  real("concert-night", { en: "Concert Night", ar: "ليلة الحفل" }, "events", // p5
     ["p5-r2c3", "p5-r1c1", "p5-r1c2", "p5-r1c4", "p5-r1c5", "p5-r2c1", "p5-r2c2", "p5-r2c4", "p5-r3c1", "p5-r3c2", "p5-r3c3", "p5-r3c4"]),
-  real("padel-tournament", "Padel Tournament", "sports", // p9
+  real("padel-tournament", { en: "Padel Tournament", ar: "بطولة البادل" }, "sports", // p9
     ["p9-r2c3", "p9-r1c1", "p9-r1c3", "p9-r1c2", "p9-r1c4", "p9-r2c1", "p9-r2c2", "p9-r2c4", "p9-r2c5", "p9-r3c1", "p9-r3c3", "p9-r3c5"]),
-  real("old-town-evenings", "Old Town Evenings", "events", // p2
+  real("old-town-evenings", { en: "Old Town Evenings", ar: "أمسيات البلدة القديمة" }, "events", // p2
     ["p2-r2c4", "p2-r1c1", "p2-r1c2", "p2-r1c3", "p2-r1c4", "p2-r2c1", "p2-r2c2", "p2-r2c5", "p2-r3c2", "p2-r3c3", "p2-r3c4", "p2-r3c5"]),
-  real("wrestling-arena-night", "Wrestling Arena Night", "sports", // p6
+  real("wrestling-arena-night", { en: "Wrestling Arena Night", ar: "ليلة المصارعة" }, "sports", // p6
     ["p6-r1c3", "p6-r1c1", "p6-r1c4", "p6-r1c5", "p6-r2c1", "p6-r2c3", "p6-r2c4", "p6-r2c5", "p6-r3c2", "p6-r3c3", "p6-r3c4", "p6-r3c5"]),
-  real("festival-after-dark", "Festival After Dark", "events", // p7
+  real("festival-after-dark", { en: "Festival After Dark", ar: "المهرجان ليلًا" }, "events", // p7
     ["p7-r2c2", "p7-r1c1", "p7-r1c2", "p7-r1c3", "p7-r1c5", "p7-r2c1", "p7-r2c4", "p7-r2c5", "p7-r3c1", "p7-r3c2", "p7-r3c3", "p7-r3c4"]),
-  real("football-fan-zone", "Football Fan Zone", "sports", // p3
+  real("football-fan-zone", { en: "Football Fan Zone", ar: "منطقة المشجعين" }, "sports", // p3
     ["p3-r1c2", "p3-r1c3", "p3-r1c4", "p3-r1c5", "p3-r2c1", "p3-r2c2", "p3-r2c3", "p3-r2c4", "p3-r2c5", "p3-r3c2", "p3-r3c4", "p3-r3c5"]),
-  real("arrivals-and-parking", "Arrivals & Parking", "events", // p8
+  real("arrivals-and-parking", { en: "Arrivals & Parking", ar: "الاستقبال والمواقف" }, "events", // p8
     ["p8-r1c3", "p8-r1c1", "p8-r1c2", "p8-r1c4", "p8-r1c5", "p8-r2c2", "p8-r2c3", "p8-r2c5", "p8-r3c1", "p8-r3c2", "p8-r3c3", "p8-r3c4"]),
 
   // ── Demo placeholders (hidden) ──────────────────────────────────────────
   {
     slug: "commercial-project-01",
-    title: "Commercial Project 01",
+    title: { en: "Commercial Project 01", ar: "Commercial Project 01" },
     category: "commercial",
     cover: photo("commercial-01-01"),
     images: set("commercial-01", 6),
@@ -80,7 +81,7 @@ export const projects: Project[] = [
   },
   {
     slug: "product-series-02",
-    title: "Product Series 02",
+    title: { en: "Product Series 02", ar: "Product Series 02" },
     category: "commercial",
     cover: photo("commercial-02-01"),
     images: set("commercial-02", 5),
@@ -90,7 +91,7 @@ export const projects: Project[] = [
   },
   {
     slug: "food-story-01",
-    title: "Food Story 01",
+    title: { en: "Food Story 01", ar: "Food Story 01" },
     category: "food",
     cover: photo("food-01-01"),
     images: set("food-01", 6),
@@ -100,7 +101,7 @@ export const projects: Project[] = [
   },
   {
     slug: "hospitality-project-02",
-    title: "Hospitality Project 02",
+    title: { en: "Hospitality Project 02", ar: "Hospitality Project 02" },
     category: "food",
     cover: photo("food-02-01"),
     images: set("food-02", 5),
@@ -110,7 +111,7 @@ export const projects: Project[] = [
   },
   {
     slug: "event-project-01",
-    title: "Event Project 01",
+    title: { en: "Event Project 01", ar: "Event Project 01" },
     category: "events",
     cover: photo("events-01-08"),
     images: set("events-01", 8),
@@ -120,7 +121,7 @@ export const projects: Project[] = [
   },
   {
     slug: "event-project-02",
-    title: "Event Project 02",
+    title: { en: "Event Project 02", ar: "Event Project 02" },
     category: "events",
     cover: photo("events-02-06"),
     images: set("events-02", 6),
@@ -130,7 +131,7 @@ export const projects: Project[] = [
   },
   {
     slug: "portrait-series-01",
-    title: "Portrait Series 01",
+    title: { en: "Portrait Series 01", ar: "Portrait Series 01" },
     category: "people",
     cover: photo("people-01-01"),
     images: set("people-01", 5),
@@ -140,7 +141,7 @@ export const projects: Project[] = [
   },
   {
     slug: "portrait-series-02",
-    title: "Portrait Series 02",
+    title: { en: "Portrait Series 02", ar: "Portrait Series 02" },
     category: "people",
     cover: photo("people-02-01"),
     images: set("people-02", 4),

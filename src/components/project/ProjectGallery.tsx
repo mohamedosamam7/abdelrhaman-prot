@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Photo } from "@/components/Photo";
 import type { Photo as PhotoData } from "@/content/photos";
+import { getDictionary, type Locale } from "@/i18n";
 import { Lightbox } from "./Lightbox";
 import styles from "./ProjectGallery.module.css";
 
@@ -11,8 +12,9 @@ import styles from "./ProjectGallery.module.css";
  * to the photographs' real pixel widths, so nothing is blown up; each frame
  * opens in the lightbox.
  */
-export function ProjectGallery({ photos, title }: { photos: PhotoData[]; title: string }) {
+export function ProjectGallery({ lang, photos, title }: { lang: Locale; photos: PhotoData[]; title: string }) {
   const [open, setOpen] = useState<number | null>(null);
+  const t = getDictionary(lang);
 
   return (
     <>
@@ -23,7 +25,7 @@ export function ProjectGallery({ photos, title }: { photos: PhotoData[]; title: 
               type="button"
               className={`hover-target ${styles.item}`}
               onClick={() => setOpen(i)}
-              aria-label={`Open image ${i + 1} of ${photos.length}: ${p.alt}`}
+              aria-label={t.project.open(i + 1, photos.length, p.alt)}
             >
               <Photo
                 photo={p}
@@ -37,7 +39,7 @@ export function ProjectGallery({ photos, title }: { photos: PhotoData[]; title: 
         ))}
       </ul>
 
-      <Lightbox photos={photos} index={open} onChange={setOpen} title={title} />
+      <Lightbox lang={lang} photos={photos} index={open} onChange={setOpen} title={title} />
     </>
   );
 }

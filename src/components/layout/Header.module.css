@@ -1,8 +1,11 @@
 /* Solid header that takes the theme of the section behind it (see Header.tsx). */
+/* Sits inside the outer frame: inset by its width, top corners rounded to
+   match the frame's inner edge. */
 .header {
   position: fixed;
-  inset: 0 0 auto;
+  inset: var(--frame) var(--frame) auto;
   z-index: 50;
+  border-radius: var(--frame-radius) var(--frame-radius) 0 0;
   border-bottom: 1px solid var(--line);
   transition:
     background-color 400ms var(--ease),
@@ -62,7 +65,7 @@
   display: none;
   align-items: center;
   gap: 0.8em;
-  margin-right: 14px;
+  margin-inline-end: 14px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -139,7 +142,7 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-right: -8px;
+  margin-inline-end: -8px;
 }
 
 .burger,
@@ -172,7 +175,7 @@
 
 /* Full-height panel: a clean overlay instead of a strip over the page. */
 .menu {
-  height: calc(100svh - var(--header-h));
+  height: calc(100svh - var(--header-h) - 2 * var(--frame));
   border-top: 1px solid var(--line);
   padding-block: 8px 24px;
   overflow-y: auto;
@@ -283,8 +286,8 @@
   }
 }
 
-/* Very small phones: Instagram moves into the menu so nothing crowds. */
-@media (max-width: 389px) {
+/* Phones: Instagram lives in the menu, leaving room for the language switch. */
+@media (max-width: 429px) {
   .icon {
     display: none;
   }
@@ -293,5 +296,50 @@
 @media (min-width: 768px) {
   .menu {
     display: none;
+  }
+}
+
+/* ── Language switch ───────────────────────────────────────────────────── */
+
+.lang,
+.menuLang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 999px;
+  transition: background-color 300ms var(--ease);
+}
+
+.lang:hover,
+.lang:focus-visible,
+.menuLang:hover,
+.menuLang:focus-visible {
+  background: rgb(243 235 221 / 0.1);
+}
+
+.lang[lang="ar"],
+.menuLang[lang="ar"] {
+  font-family: var(--font-arabic-sans), var(--font-sans);
+}
+
+.lang[lang="en"],
+.menuLang[lang="en"] {
+  font-family: var(--font-grotesk), sans-serif;
+}
+
+.menuLang {
+  border: 1px solid var(--line);
+  padding-inline: 16px;
+  font-size: 15px;
+}
+
+@media (max-width: 767px) {
+  .lang {
+    padding-inline: 8px;
+    font-size: 13px;
   }
 }

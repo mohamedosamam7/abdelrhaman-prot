@@ -1,11 +1,11 @@
 /* The contact section is the whole page; clear the fixed header. */
 .page {
-  padding-top: calc(var(--header-h) + clamp(16px, 3vw, 48px));
+  padding-top: calc(var(--top) + clamp(16px, 3vw, 48px));
 }
 
 .service {
   padding: 10px 14px;
-  border-left: 2px solid var(--accent);
+  border-inline-start: 2px solid var(--accent);
   background: rgba(243, 235, 221, 0.06);
   font-size: 15px;
 }
@@ -36,5 +36,5 @@
 
 .backLink:hover svg,
 .backLink:focus-visible svg {
-  transform: translateX(3px);
+  transform: translateX(calc(3px * var(--dir)));
 }
