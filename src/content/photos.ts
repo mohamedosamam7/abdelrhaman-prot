@@ -55,6 +55,11 @@ export interface Photo {
   /** Placeholder generator hints — ignored once a real photo is supplied. */
   subject?: Subject;
   tone?: Tone;
+  /** Dashboard media only: Arabic alt text (static photos use photo-alt-ar.ts). */
+  altAr?: string;
+  /** Dashboard media only: "video" items carry the file in `videoSrc`; `src` is the poster. */
+  kind?: "image" | "video";
+  videoSrc?: string;
 }
 
 const LONG_EDGE = 1800;

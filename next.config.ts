@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
    */
   allowedDevOrigins: ["192.168.1.9", "192.168.1.70", "172.20.10.8"],
   images: {
+    // Dashboard uploads: published files (public bucket) and, for an
+    // administrator's draft preview only, short-lived signed URLs.
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/media/**" },
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/sign/media-draft/**" },
+    ],
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 828, 1080, 1280, 1600, 2048],
     imageSizes: [256, 384, 512],

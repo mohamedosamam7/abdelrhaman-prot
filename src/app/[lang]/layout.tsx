@@ -5,8 +5,9 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { RevealObserver } from "@/components/RevealObserver";
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { site } from "@/content/site";
-import { dirOf, getDictionary, isLocale, locales, tr, type Locale } from "@/i18n";
+import { PreviewBanner } from "@/components/PreviewBanner";
+import { getContent } from "@/cms/load";
+import { dirOf, getDictionary, isLocale, locales, siteUrl, tr, type Locale } from "@/i18n";
 import { alternates } from "@/lib/metadata";
 import "../globals.css";
 
@@ -25,15 +26,18 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const t = getDictionary(lang);
-  const description = tr(lang, site.description);
+  const { settings, shareImage } = await getContent();
+  const title = tr(lang, settings.seo.homeTitle) || t.meta.homeTitle;
+  const description = tr(lang, settings.seo.homeDescription) || tr(lang, settings.description);
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-    title: { default: t.meta.homeTitle, template: t.meta.template },
+    metadataBase: new URL(siteUrl),
+    title: { default: title, template: `%s — ${tr(lang, settings.fullName)}` },
     description,
     alternates: alternates(lang, "/"),
     openGraph: {
-      title: t.meta.homeTitle,
+      title,
       description,
+      ...(shareImage && !shareImage.videoSrc ? { images: [{ url: shareImage.src, width: shareImage.width, height: shareImage.height }] } : {}),
       siteName: t.meta.siteName,
       locale: lang === "ar" ? "ar_SA" : "en_US",
       alternateLocale: lang === "ar" ? "en_US" : "ar_SA",
@@ -52,12 +56,14 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   if (!isLocale(lang)) notFound();
   const locale: Locale = lang;
   const t = getDictionary(locale);
+  const content = await getContent();
 
   return (
     <html
       lang={locale}
       dir={dirOf(locale)}
       data-scroll-behavior="smooth"
+      data-gradient={content.settings.theme.gradient}
       className={`${grotesk.variable} ${editorial.variable} ${arabicSans.variable} ${arabicSerif.variable}`}
       suppressHydrationWarning
     >
@@ -76,9 +82,10 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <a href="#main" className="skip-link">
           {t.skip}
         </a>
-        <Header lang={locale} />
+        {content.source === "draft" && <PreviewBanner lang={locale} />}
+        <Header lang={locale} settings={content.settings} />
         <main id="main">{children}</main>
-        <Footer lang={locale} />
+        <Footer lang={locale} settings={content.settings} />
         <div className="site-frame" aria-hidden="true" />
         <RevealObserver />
         <SmoothScroll />

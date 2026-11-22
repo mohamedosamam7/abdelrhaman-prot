@@ -33,6 +33,8 @@ export interface WorkLabels {
 
 interface ViewProps {
   lang: Locale;
+  /** False for the featured-projects section: cards only. */
+  showFilters?: boolean;
   cards: WorkCard[];
   filters: WorkFilter[];
   labels: WorkLabels;
@@ -55,12 +57,13 @@ export function WorkGallery(props: Omit<ViewProps, "active">) {
  * 3 columns with a centred last row; on phones an odd count makes the first
  * card full width.
  */
-export function WorkGalleryView({ lang, cards, filters, labels, active }: ViewProps) {
+export function WorkGalleryView({ lang, cards, filters, labels, active, showFilters = true }: ViewProps) {
   const shown = active === "all" ? cards : cards.filter((c) => c.category === active);
   const cols = shown.length === 4 || shown.length === 2 ? 2 : shown.length === 1 ? 1 : 3;
 
   return (
     <div className={styles.wrap}>
+      {showFilters && (
       <nav className={styles.filters} aria-label={labels.filterLabel}>
         {[{ key: "all", label: labels.all, count: cards.length }, ...filters].map((f) => (
           <Link
@@ -75,10 +78,13 @@ export function WorkGalleryView({ lang, cards, filters, labels, active }: ViewPr
           </Link>
         ))}
       </nav>
+      )}
 
-      <p className="sr-only" aria-live="polite">
-        {getDictionary(lang).work.showing(shown.length)}
-      </p>
+      {showFilters && (
+        <p className="sr-only" aria-live="polite">
+          {getDictionary(lang).work.showing(shown.length)}
+        </p>
+      )}
 
       <ul
         className={styles.grid}

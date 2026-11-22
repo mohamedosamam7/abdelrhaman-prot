@@ -71,6 +71,7 @@ export const ar: Dictionary = {
     continue: "تابع التصفح",
     enquiring: (service: string): [string, string, string] => ["تستفسر عن تصوير ", service, "؟ اذكر ذلك في رسالتك."],
   },
+  preview: { label: "معاينة — مسودّات غير منشورة", exit: "إنهاء المعاينة" },
   approach: { placeholder: "صورة مؤقتة" },
   notFound: {
     label: "404 — الصفحة غير موجودة",

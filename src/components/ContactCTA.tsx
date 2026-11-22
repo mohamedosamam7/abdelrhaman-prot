@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, BehanceIcon, InstagramIcon } from "@/components/Icons";
-import { site } from "@/content/site";
+import type { SettingsDoc } from "@/cms/schema";
 import { getDictionary, tr, type Locale } from "@/i18n";
-import { emailHref, whatsappHref } from "@/lib/contact";
+import { behanceLink, emailHref, whatsappHref } from "@/lib/contact";
 import { Words, wordCount } from "@/components/Words";
 import styles from "./ContactCTA.module.css";
 
 interface Props {
   lang: Locale;
+  settings: SettingsDoc;
   /** h1 on the Contact page, h2 where it closes another page. */
   as?: "h1" | "h2";
   /** Contact page only: confirmed email / WhatsApp and location beneath the buttons. */
@@ -23,14 +24,16 @@ interface Props {
  * Behance secondary. Every URL comes from site.contact. Content is never
  * hidden behind a reveal animation: this is the page's main action.
  */
-export function ContactCTA({ lang, as: Heading = "h2", details = false, context, footer }: Props) {
-  const c = site.contact;
+export function ContactCTA({ lang, settings, as: Heading = "h2", details = false, context, footer }: Props) {
+  const c = settings.contact;
   const t = getDictionary(lang);
   const heading = tr(lang, c.heading);
-  const behance = !c.behance.placeholder && c.behance.url ? c.behance : null;
+  const behance = behanceLink(c);
+  const mail = emailHref(c);
+  const wa = whatsappHref(c, lang);
   const channels = [
-    emailHref && { label: t.contact.email, value: c.email.value, href: emailHref },
-    whatsappHref && { label: t.contact.whatsapp, value: c.whatsapp.display || c.whatsapp.value, href: whatsappHref(lang) },
+    mail && { label: t.contact.email, value: c.email.value, href: mail },
+    wa && { label: t.contact.whatsapp, value: c.whatsapp.display || c.whatsapp.number, href: wa },
   ].filter(Boolean) as { label: string; value: string; href: string }[];
 
   return (
@@ -96,9 +99,9 @@ export function ContactCTA({ lang, as: Heading = "h2", details = false, context,
             <div>
               <dt className="t-label">{t.contact.basedIn}</dt>
               <dd>
-                {tr(lang, site.location.city)}
+                {tr(lang, settings.location.city)}
                 {lang === "ar" ? "، " : ", "}
-                {tr(lang, site.location.country)}
+                {tr(lang, settings.location.country)}
               </dd>
             </div>
           </dl>

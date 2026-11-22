@@ -1,0 +1,34 @@
+/* Sits over the slot's poster <Image>; the poster keeps the slot's ratio. */
+.wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 500ms var(--ease);
+}
+
+.video[data-playing] {
+  opacity: 1;
+}
+
+.play {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-start: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(243 235 221 / 0.92);
+  color: var(--wine-850);
+}
+
+.play svg {
+  margin-left: 3px; /* optical centring; the icon is never mirrored */
+}

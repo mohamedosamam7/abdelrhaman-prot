@@ -62,6 +62,7 @@ export const en = {
     /** Sentence around the service name: [before, service, after]. */
     enquiring: (service: string): [string, string, string] => ["Enquiring about ", service, " photography — mention it in your message."],
   },
+  preview: { label: "Preview — unpublished drafts", exit: "Exit preview" },
   approach: { placeholder: "Placeholder image" },
   notFound: {
     label: "404 — Frame not found",

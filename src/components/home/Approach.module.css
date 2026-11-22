@@ -127,3 +127,8 @@
     font-size: 14px;
   }
 }
+
+/* Holds the photo and, for video media, the inline video over its poster. */
+.media {
+  position: relative;
+}

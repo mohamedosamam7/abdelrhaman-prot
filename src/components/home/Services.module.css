@@ -186,3 +186,15 @@
     height: 28px;
   }
 }
+
+/* Featured projects reuse this head; its optional intro sits under the heading. */
+.intro {
+  grid-column: 4 / span 6;
+  max-width: 52ch;
+}
+
+@media (max-width: 767px) {
+  .intro {
+    grid-column: 1 / -1;
+  }
+}

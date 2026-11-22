@@ -58,20 +58,20 @@
      seam with the next section. */
   --grad-hero:
     linear-gradient(to bottom, transparent 72%, var(--ink) 100%),
-    radial-gradient(34% 40% at 50% 42%, rgb(184 106 116 / 0.42), transparent 74%),
-    radial-gradient(48% 58% at 16% 14%, rgb(163 54 74 / 0.62), transparent 72%),
-    radial-gradient(44% 54% at 88% 70%, rgb(125 26 43 / 0.6), transparent 72%),
+    radial-gradient(34% 40% at 50% 42%, color-mix(in srgb, var(--grad-rose) 42%, transparent), transparent 74%),
+    radial-gradient(48% 58% at 16% 14%, color-mix(in srgb, var(--grad-light) 62%, transparent), transparent 72%),
+    radial-gradient(44% 54% at 88% 70%, color-mix(in srgb, var(--grad-wine) 60%, transparent), transparent 72%),
     radial-gradient(130% 115% at 50% 38%, var(--grad-wine) 0%, var(--grad-burgundy) 42%, var(--grad-deep) 100%);
   /* Dark content sections: quieter, one light pool, same family. Starts at the
      page colour so section joins stay seamless. */
   --grad-section:
-    radial-gradient(55% 70% at 85% 25%, rgb(163 54 74 / 0.36), transparent 72%),
-    radial-gradient(60% 80% at 10% 95%, rgb(23 4 10 / 0.6), transparent 70%),
+    radial-gradient(55% 70% at 85% 25%, color-mix(in srgb, var(--grad-light) 36%, transparent), transparent 72%),
+    radial-gradient(60% 80% at 10% 95%, color-mix(in srgb, var(--grad-deep) 60%, transparent), transparent 70%),
     linear-gradient(to bottom, var(--ink), var(--grad-burgundy) 50%, var(--ink));
   /* Contact: off-centre light over a wine field, deep lower edge. */
   --grad-contact:
-    radial-gradient(48% 62% at 82% 28%, rgb(184 106 116 / 0.34), transparent 70%),
-    radial-gradient(70% 90% at 18% 80%, rgb(163 54 74 / 0.5), transparent 72%),
+    radial-gradient(48% 62% at 82% 28%, color-mix(in srgb, var(--grad-rose) 34%, transparent), transparent 70%),
+    radial-gradient(70% 90% at 18% 80%, color-mix(in srgb, var(--grad-light) 50%, transparent), transparent 72%),
     linear-gradient(to bottom, var(--ink), var(--grad-burgundy) 45%, var(--grad-deep));
   /* Where page content starts: below the frame's top edge and the header. */
   --top: calc(var(--header-h) + var(--frame));
@@ -637,4 +637,44 @@ html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3 {
   text-wrap: balance;
+}
+
+/* Draft preview banner (administrators only). */
+.preview-banner {
+  position: fixed;
+  z-index: 200;
+  inset-block-end: 16px;
+  inset-inline: 0;
+  margin-inline: auto;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 8px 8px 18px;
+  border-radius: 999px;
+  background: #f2c94c;
+  color: #241a00;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+}
+
+.preview-banner button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #241a00;
+  color: #f2c94c;
+}
+
+/* Gradient presets chosen in the dashboard (classic = the approved default). */
+html[data-gradient="deep"] {
+  --grad-light: #8a2a3c;
+  --grad-rose: #9c5560;
+}
+
+html[data-gradient="soft"] {
+  --grad-light: #b04257;
+  --grad-rose: #c98a92;
 }

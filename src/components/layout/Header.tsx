@@ -5,17 +5,21 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { ArrowUpRight, BehanceIcon, InstagramIcon } from "@/components/Icons";
-import { site } from "@/content/site";
+import type { SettingsDoc } from "@/cms/schema";
+import { behanceLink } from "@/lib/contact";
 import { getDictionary, localeHref, otherLocale, splitLocale, tr, type Locale } from "@/i18n";
 import { lockScroll } from "@/lib/scroll";
 import styles from "./Header.module.css";
 
-function navItems(lang: Locale) {
-  const t = getDictionary(lang).nav;
+const CONTACT = "/contact";
+const TIME_ZONE = "Asia/Riyadh";
+
+function navItems(lang: Locale, s: SettingsDoc) {
+  const t = { home: tr(lang, s.nav.home), work: tr(lang, s.nav.work), contact: tr(lang, s.nav.contact) };
   return [
     { path: "/", label: t.home, match: (p: string) => p === "/" },
     { path: "/work", label: t.work, match: (p: string) => p.startsWith("/work") },
-    { path: site.contact.page, label: t.contact, match: (p: string) => p === site.contact.page },
+    { path: CONTACT, label: t.contact, match: (p: string) => p === CONTACT },
   ];
 }
 
@@ -102,17 +106,17 @@ function useHeaderTheme(ref: React.RefObject<HTMLElement | null>, pathname: stri
   return light;
 }
 
-export function Header({ lang }: { lang: Locale }) {
+export function Header({ lang, settings }: { lang: Locale; settings: SettingsDoc }) {
   const pathname = usePathname();
   const path = splitLocale(pathname).path;
   const t = getDictionary(lang);
-  const NAV = navItems(lang);
+  const NAV = navItems(lang, settings);
   const ref = useRef<HTMLElement>(null);
-  const time = useLocalTime(site.location.timeZone, lang);
+  const time = useLocalTime(TIME_ZONE, lang);
   const light = useHeaderTheme(ref, pathname);
   const [open, setOpen] = useState(false);
-  const ig = site.contact.instagram;
-  const behance = !site.contact.behance.placeholder && site.contact.behance.url ? site.contact.behance : null;
+  const ig = settings.contact.instagram;
+  const behance = behanceLink(settings.contact);
 
   // Close the mobile menu on navigation and on Escape.
   useEffect(() => setOpen(false), [pathname]);
@@ -149,7 +153,7 @@ export function Header({ lang }: { lang: Locale }) {
 
         <div className={styles.actions}>
           <p className={`t-meta ${styles.place}`}>
-            {tr(lang, site.location.short)}
+            {tr(lang, settings.location.short)}
             {time && (
               <>
                 <span className={styles.dot} aria-hidden="true" />
@@ -164,8 +168,8 @@ export function Header({ lang }: { lang: Locale }) {
             <InstagramIcon />
           </a>
 
-          <Link href={localeHref(lang, site.contact.page)} className={styles.cta}>
-            {t.nav.letsTalk} <ArrowUpRight size={14} className="dir-icon" />
+          <Link href={localeHref(lang, CONTACT)} className={styles.cta}>
+            {tr(lang, settings.nav.letsTalk)} <ArrowUpRight size={14} className="dir-icon" />
           </Link>
 
           <button
@@ -207,7 +211,7 @@ export function Header({ lang }: { lang: Locale }) {
             </div>
             <LanguageSwitch lang={lang} className={styles.menuLang} />
             <span className="t-meta muted">
-              {tr(lang, site.location.short)}
+              {tr(lang, settings.location.short)}
               {time && ` · ${time}`}
             </span>
           </div>

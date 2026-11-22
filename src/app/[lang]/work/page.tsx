@@ -4,11 +4,11 @@ import { Suspense } from "react";
 import { ContactCTA } from "@/components/ContactCTA";
 import { WorkGallery, WorkGalleryView, type WorkCard, type WorkFilter } from "@/components/work/WorkGallery";
 import { WorkIntro } from "@/components/work/WorkIntro";
-import { discipline, disciplines } from "@/content/disciplines";
-import { projectHref, publicProjects } from "@/content/projects";
+import { projectCard } from "@/cms/cards";
+import { getContent } from "@/cms/load";
+import { Sections } from "@/components/Sections";
+import { disciplines } from "@/content/disciplines";
 import { getDictionary, isLocale, localeHref, tr } from "@/i18n";
-import { localizePhoto } from "@/lib/content";
-import { serveOriginal } from "@/lib/image";
 import { pageMetadata } from "@/lib/metadata";
 import styles from "./work.module.css";
 
@@ -24,18 +24,8 @@ export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
   if (!isLocale(lang)) notFound();
   const t = getDictionary(lang);
 
-  const cards: WorkCard[] = publicProjects.map((p) => {
-    const cover = localizePhoto(p.cover, lang);
-    return {
-      slug: p.slug,
-      href: localeHref(lang, projectHref(p)),
-      title: tr(lang, p.title),
-      category: p.category,
-      categoryLabel: tr(lang, discipline(p.category).label),
-      frames: t.work.frames(p.images.length),
-      cover: { src: cover.src, alt: cover.alt, position: cover.position, original: serveOriginal(cover.width) },
-    };
-  });
+  const { projects, settings, pages } = await getContent();
+  const cards: WorkCard[] = projects.map((p) => projectCard(p, lang));
   // Only categories with real, public work get a filter.
   const filters: WorkFilter[] = disciplines
     .map((d) => ({ key: d.key, label: tr(lang, d.label), count: cards.filter((c) => c.category === d.key).length }))
@@ -53,7 +43,8 @@ export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
           </Suspense>
         </div>
       </section>
-      <ContactCTA lang={lang} />
+      <Sections lang={lang} sections={pages.work} settings={settings} projects={projects} />
+      <ContactCTA lang={lang} settings={settings} />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { site } from "@/content/site";
+import { getContent } from "@/cms/load";
 import { localeHref, locales, siteUrl, tr, type Locale } from "@/i18n/config";
 
 /** Canonical URL for this page plus hreflang alternates for every language. */
@@ -18,17 +18,19 @@ export function alternates(lang: Locale, path: string): Metadata["alternates"] {
  * canonical/hreflang. Next.js merges metadata shallowly, so each page sets
  * its own Open Graph text.
  */
-export function pageMetadata(lang: Locale, path: string, title: string, description: string): Metadata {
+export async function pageMetadata(lang: Locale, path: string, title: string, description: string): Promise<Metadata> {
+  const { settings, shareImage } = await getContent();
   return {
     title,
     description,
     alternates: alternates(lang, path),
     openGraph: {
-      title: `${title} — ${tr(lang, site.fullName)}`,
+      title: `${title} — ${tr(lang, settings.fullName)}`,
       description,
       type: "website",
       locale: lang === "ar" ? "ar_SA" : "en_US",
       url: `${siteUrl}${localeHref(lang, path)}`,
+      ...(shareImage && !shareImage.videoSrc ? { images: [{ url: shareImage.src, width: shareImage.width, height: shareImage.height }] } : {}),
     },
   };
 }

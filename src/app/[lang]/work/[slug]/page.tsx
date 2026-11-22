@@ -6,22 +6,28 @@ import { Lines } from "@/components/Lines";
 import { Photo } from "@/components/Photo";
 import { ProjectGallery } from "@/components/project/ProjectGallery";
 import { discipline } from "@/content/disciplines";
-import { DETAIL_MAX, detailProjects, getProject, hasDetailPage, nextProject } from "@/content/projects";
+import { getContent, getPublishedContent } from "@/cms/load";
+import { DETAIL_MAX, detailProjects, findProject, hasDetailPage, nextProject } from "@/cms/projects";
+import type { DisciplineKey } from "@/content/disciplines";
 import { getDictionary, isLocale, localeHref, locales, tr } from "@/i18n";
 import { localizePhoto } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import styles from "./project.module.css";
 
-/** Only projects with enough strong images get a page; others live on /work. */
-export const dynamicParams = false;
+/**
+ * Only projects with enough strong images get a page; others live on /work.
+ * Pages for projects published after the build render on first request.
+ */
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return locales.flatMap((lang) => detailProjects.map((p) => ({ lang, slug: p.slug })));
+export async function generateStaticParams() {
+  const { projects } = await getPublishedContent();
+  return locales.flatMap((lang) => detailProjects(projects).map((p) => ({ lang, slug: p.slug })));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug]">): Promise<Metadata> {
   const { lang, slug } = await params;
-  const project = getProject(slug);
+  const project = findProject((await getContent()).projects, slug);
   if (!project || !isLocale(lang)) return {};
   const t = getDictionary(lang);
   const title = tr(lang, project.title);
@@ -29,18 +35,19 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug
     lang,
     `/work/${slug}`,
     title,
-    t.meta.projectDescription(title, tr(lang, discipline(project.category).label), project.images.length),
+    t.meta.projectDescription(title, tr(lang, discipline(project.category as DisciplineKey).label), project.images.length),
   );
 }
 
 export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[slug]">) {
   const { lang, slug } = await params;
-  const project = getProject(slug);
+  const { projects } = await getContent();
+  const project = findProject(projects, slug);
   if (!isLocale(lang) || !project || !hasDetailPage(project)) notFound();
   const t = getDictionary(lang);
 
-  const d = discipline(project.category);
-  const next = nextProject(project.slug);
+  const d = discipline(project.category as DisciplineKey);
+  const next = nextProject(projects, project.slug);
   const title = tr(lang, project.title);
   // A page, not an archive: at most DETAIL_MAX frames, cover first.
   const gallery = project.images.slice(0, DETAIL_MAX).map((p) => localizePhoto(p, lang));
@@ -65,7 +72,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[s
           {project.year && ` · ${project.year}`}
         </p>
 
-        {project.summary && <p className={`t-lead ${styles.summary}`}>{project.summary}</p>}
+        {tr(lang, project.summary) && <p className={`t-lead ${styles.summary}`}>{tr(lang, project.summary)}</p>}
       </header>
 
       <div className={`container ${styles.gallery}`}>
@@ -76,11 +83,12 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[s
         <Link href={localeHref(lang, "/work")} className={`t-meta ${styles.back}`}>
           <ArrowRight size={14} className="back-icon" /> <span className="link-line">{t.project.allWork}</span>
         </Link>
+        {next && (
         <Link href={localeHref(lang, `/work/${next.slug}`)} className={`hover-target ${styles.nextLink}`}>
           <span className={styles.nextText}>
             <span className={`t-meta muted`}>{t.project.next}</span>
             <span className={`t-display ${styles.nextTitle}`}>{tr(lang, next.title)}</span>
-            <span className="t-meta muted">{tr(lang, discipline(next.category).label)}</span>
+            <span className="t-meta muted">{tr(lang, discipline(next.category as DisciplineKey).label)}</span>
           </span>
           <Photo
             photo={localizePhoto(next.cover, lang)}
@@ -89,6 +97,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[s
             className={`hover-zoom ${styles.nextImg}`}
           />
         </Link>
+        )}
       </footer>
     </article>
   );

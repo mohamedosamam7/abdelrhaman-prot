@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
-import { detailProjects } from "@/content/projects";
+import { getPublishedContent } from "@/cms/load";
+import { detailProjects } from "@/cms/projects";
 import { localeHref, locales, siteUrl } from "@/i18n/config";
 
 /** Every public page in both languages, each listing its alternate. */
-export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["/", "/work", "/contact", ...detailProjects.map((p) => `/work/${p.slug}`)];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { projects } = await getPublishedContent();
+  const paths = ["/", "/work", "/contact", ...detailProjects(projects).map((p) => `/work/${p.slug}`)];
   return paths.flatMap((path) =>
     locales.map((lang) => ({
       url: siteUrl + localeHref(lang, path),

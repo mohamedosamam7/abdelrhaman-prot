@@ -4,9 +4,10 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import Image from "next/image";
 import { useRef } from "react";
-import { heroCopy, heroRows, heroSlots, type HeroLayout } from "@/content/home";
-import { photo } from "@/content/photos";
-import { tr, type Locale } from "@/i18n";
+import type { ResolvedOf } from "@/cms/types";
+import { InlineVideo } from "@/components/media/InlineVideo";
+import { heroRows, type HeroLayout } from "@/content/home";
+import { getDictionary, tr, type Locale } from "@/i18n";
 import { localizePhoto } from "@/lib/content";
 import { serveOriginal } from "@/lib/image";
 import { GLASS_R, HeroLens, shutterPaths } from "./HeroLens";
@@ -15,7 +16,6 @@ import styles from "./HeroPhotographyGrid.module.css";
 gsap.registerPlugin(useGSAP);
 
 const LAYOUTS: HeroLayout[] = ["desktop", "tablet", "mobile"];
-const SLOT = Object.fromEntries(heroSlots.map((s) => [s.id, s]));
 
 /**
  * Intro timing (seconds from first paint; the lens entrance itself is CSS).
@@ -46,7 +46,9 @@ const SIZES = {
  */
 let introPlayed = false;
 
-export function HeroPhotographyGrid({ lang }: { lang: Locale }) {
+export function HeroPhotographyGrid({ lang, data }: { lang: Locale; data: ResolvedOf<"hero">["data"] }) {
+  const SLOT = Object.fromEntries(data.slots.map((s) => [s.id, s]));
+  const t = getDictionary(lang);
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -221,7 +223,7 @@ export function HeroPhotographyGrid({ lang }: { lang: Locale }) {
                 <div key={r} className={styles.row}>
                   {row.map((id) => {
                     const slot = SLOT[id];
-                    const p = localizePhoto(photo(slot.photo), lang);
+                    const p = localizePhoto(slot.photo, lang);
                     return (
                       <div key={id} className={`${styles.tile} ${styles[slot.type]}`} data-slot={id} data-type={slot.type}>
                         <Image
@@ -236,6 +238,9 @@ export function HeroPhotographyGrid({ lang }: { lang: Locale }) {
                           sizes={SIZES[layout][slot.type]}
                           style={{ objectPosition: slot.focus }}
                         />
+                        {p.videoSrc && (
+                          <InlineVideo src={p.videoSrc} poster={p.src || undefined} focus={slot.focus} label={p.alt} playLabel={t.frames.play(p.alt)} afterIntro />
+                        )}
                       </div>
                     );
                   })}
@@ -255,12 +260,12 @@ export function HeroPhotographyGrid({ lang }: { lang: Locale }) {
         <div className={styles.caption}>
           <h1 id="hero-title" className={`t-meta ${styles.title}`}>
             <span className={styles.lineMask}>
-              <span data-line="">{tr(lang, heroCopy.title)}</span>
+              <span data-line="">{tr(lang, data.title)}</span>
             </span>
           </h1>
           <p className={`t-meta ${styles.meta}`}>
             <span className={styles.lineMask}>
-              <span data-line="">{tr(lang, heroCopy.meta)}</span>
+              <span data-line="">{tr(lang, data.meta)}</span>
             </span>
           </p>
         </div>
