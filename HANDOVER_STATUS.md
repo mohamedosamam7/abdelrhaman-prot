@@ -137,7 +137,22 @@ https://abdelrhaman-prot.vercel.app.
 - Release branch: `release/frontend-i18n` → preview → verify → fast-forward `main` → production.
 - Excluded from the release: `.claude/` and `skills-lock.json` (local agent tooling),
   `references/` (gitignored), and env files.
-- (Results are added below as they happen.)
+- 2026-11-22: commit `5b6a740` pushed to `release/frontend-i18n`. The Vercel preview built
+  successfully (https://vercel.com/osama-3dd7/abdelrhaman-prot/CRzn8EnFYtbSnNUEGcmDHf6tS7hv), branch URL
+  https://abdelrhaman-prot-git-release-frontend-i18n-osama-3dd7.vercel.app.
+- **Preview verified (2026-11-22)**, using the bypass secret from `.env.local` (never printed or
+  committed):
+  - HTTP/SEO 37/37: redirects keep the query string, Accept-Language ar redirects to `/ar`,
+    lang/dir, canonical and hreflang on the production domain, sitemap (24 URLs), robots, images,
+    CSS, localized 404.
+  - Interactions 34/35. The failing item is the synthetic-gesture check, a known headless artifact
+    that also fails on a control area; the raw-touch tests pass: vertical swipe on the gallery scrolls
+    the page, horizontal swipe advances it in EN and AR.
+  - WebKit 26/26.
+  - Hero, all cases: 0 logo/photo overlap, no replays, two photo sizes, resize, slow images, reduced
+    motion and no-JS all end correctly.
+- **Production:** `main` fast-forwarded to the release and pushed (results below).
+- Previous production (rollback target): `87bab58`.
 
 ## Phase 3 — Supabase content dashboard (not started)
 
