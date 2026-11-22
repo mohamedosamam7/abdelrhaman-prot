@@ -30,7 +30,7 @@ if (existing) {
   userId = data.user.id;
   console.log("Invitation sent — the link lets them set their own password.");
 }
-const { error } = await admin.from("admins").upsert({ user_id: userId });
+const { error } = await admin.from("admins").upsert({ user_id: userId }, { onConflict: "user_id", ignoreDuplicates: true });
 if (error) {
   console.error(`Could not grant admin rights: ${error.message}`);
   process.exit(1);
