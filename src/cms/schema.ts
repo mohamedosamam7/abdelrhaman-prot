@@ -85,6 +85,8 @@ export const Settings = z.object({
   }),
   seo: z.object({ homeTitle: L(90), homeDescription: L(200), shareImage: MediaRef.nullable() }),
   theme: z.object({ gradient: z.enum(gradients) }),
+  /** Display names of the fixed project categories (filters, gallery tabs, cards). */
+  categories: z.object({ events: L(40), sports: L(40), commercial: L(40), food: L(40), people: L(40) }).optional(),
 });
 export type SettingsDoc = z.infer<typeof Settings>;
 
@@ -179,9 +181,22 @@ export const allowedSections: Record<PageKey, SectionType[]> = {
   contact: ["gallery", "textMedia"],
 };
 
+/** Page-level text: search/sharing title and description, and (Work) the page intro. */
+export const PageMeta = z.object({ title: L(90), description: L(200) });
+export const PageIntro = z.object({
+  kicker: L(80),
+  /** One line per row of the large title; use a new line to break it. */
+  title: L(80),
+  lead: L(400),
+});
+
 export const Page = (key: PageKey) =>
   z
-    .object({ sections: z.array(Section).max(20) })
+    .object({
+      meta: PageMeta.optional(),
+      intro: key === "work" ? PageIntro.optional() : z.undefined().optional(),
+      sections: z.array(Section).max(20),
+    })
     .superRefine((doc, ctx) => {
       const ids = new Set<string>();
       doc.sections.forEach((s, i) => {
@@ -197,7 +212,9 @@ export const Page = (key: PageKey) =>
       if (doc.sections.filter((s) => s.type === "contact").length > 1)
         ctx.addIssue({ code: "custom", message: "Only one contact section per page", path: ["sections"] });
     });
-export type PageDoc = { sections: SectionDoc[] };
+export type PageMetaDoc = z.infer<typeof PageMeta>;
+export type PageIntroDoc = z.infer<typeof PageIntro>;
+export type PageDoc = { meta?: PageMetaDoc; intro?: PageIntroDoc; sections: SectionDoc[] };
 
 /* ── Projects ───────────────────────────────────────────────────────────── */
 

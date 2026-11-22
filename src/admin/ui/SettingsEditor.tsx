@@ -4,12 +4,13 @@ import { useState } from "react";
 import { saveSettings } from "@/admin/actions";
 import type { PickerItem } from "@/admin/data";
 import type { AdminDict } from "@/admin/i18n";
-import { gradients, type SettingsDoc } from "@/cms/schema";
-import { HeadingField, LField, MediaField, SaveBar, TextField, Toggle, useSave } from "./fields";
+import { categories, gradients, type SettingsDoc } from "@/cms/schema";
+import { HeadingField, LField, MediaField, SaveBar, TextField, Toggle, useSave, useUnsaved } from "./fields";
 
 export function SettingsEditor({ t, initial, items }: { t: AdminDict; initial: SettingsDoc; items: PickerItem[] }) {
   const [s, setS] = useState<SettingsDoc>(initial);
   const { pending, result, save } = useSave(saveSettings);
+  const { dirty, markSaved } = useUnsaved(s, t.common.leave);
   const c = s.contact;
   const setC = (patch: Partial<SettingsDoc["contact"]>) => setS({ ...s, contact: { ...c, ...patch } });
   const T = t.settings;
@@ -89,7 +90,24 @@ export function SettingsEditor({ t, initial, items }: { t: AdminDict; initial: S
         </label>
       </section>
 
-      <SaveBar t={t} pending={pending} result={result} onSave={() => save(s)} />
+      <section className="card">
+        <h2>{T.categories}</h2>
+        <p className="hint">{T.categoriesHelp}</p>
+        <div className="grid2">
+          {categories.map((k) => (
+            <LField
+              key={k}
+              label={k}
+              value={s.categories?.[k] ?? { en: "", ar: "" }}
+              onChange={(v) => setS({ ...s, categories: { ...(s.categories ?? ({} as NonNullable<SettingsDoc["categories"]>)), [k]: v } })}
+              t={t}
+              max={40}
+            />
+          ))}
+        </div>
+      </section>
+
+      <SaveBar t={t} pending={pending} result={result} dirty={dirty} onSave={() => save(s, () => markSaved(s))} />
     </>
   );
 }

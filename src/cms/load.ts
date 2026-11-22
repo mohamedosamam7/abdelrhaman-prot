@@ -66,10 +66,12 @@ function build(raw: RawContent | null, source: SiteContent["source"]): SiteConte
   const settings: SettingsDoc = settingsParsed?.success ? settingsParsed.data : staticSettings();
 
   const pages = {} as SiteContent["pages"];
+  const pageText = {} as SiteContent["pageText"];
   for (const key of pageKeys) {
     const parsed = raw?.pages?.[key] ? Page(key).safeParse(raw.pages[key]) : null;
     const doc: PageDoc = parsed?.success ? parsed.data : fallbackPages[key];
     pages[key as PageKey] = resolvePage(doc, media);
+    pageText[key as PageKey] = { meta: doc.meta ?? fallbackPages[key].meta, intro: doc.intro ?? fallbackPages[key].intro };
   }
 
   const projectDocs: (ProjectDoc & { featured: boolean })[] =
@@ -83,7 +85,7 @@ function build(raw: RawContent | null, source: SiteContent["source"]): SiteConte
 
   const shareImage = settings.seo.shareImage ? media(settings.seo.shareImage) : null;
   const usedDb = !!raw && (settingsParsed?.success || raw.projects.length > 0);
-  return { settings, shareImage, pages, projects, source: usedDb ? source : "static" };
+  return { settings, shareImage, pages, pageText, projects, source: usedDb ? source : "static" };
 }
 
 /**

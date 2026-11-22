@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "@/components/Icons";
+import { categoryLabel } from "@/cms/categories";
 import { findProject, projectHref } from "@/cms/projects";
+import type { SettingsDoc } from "@/cms/schema";
 import type { CmsProject, ResolvedOf } from "@/cms/types";
 import { disciplines } from "@/content/disciplines";
 import { getDictionary, localeHref, tr, type Locale } from "@/i18n";
@@ -13,13 +15,13 @@ import styles from "./SelectedFrames.module.css";
 type Data = ResolvedOf<"gallery">["data"];
 
 /** Resolves the section into plain, serialisable frames for the client carousel. */
-function resolveFrames(lang: Locale, data: Data, projects: CmsProject[]): { frames: Frame[]; categories: FrameCategory[] } {
+function resolveFrames(lang: Locale, data: Data, projects: CmsProject[], settings: SettingsDoc): { frames: Frame[]; categories: FrameCategory[] } {
   const order = disciplines.map((d) => d.key as string);
   const sorted = [...data.items].sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category));
 
   const frames = sorted.map((item): Frame => {
     const project = item.project ? findProject(projects, item.project) : undefined;
-    const label = tr(lang, disciplines.find((d) => d.key === item.category)!.label);
+    const label = categoryLabel(settings, item.category, lang);
     const p = localizePhoto(item.photo, lang);
     // The caption is the linked project's title in the visitor's language, else the media's alt text.
     const title = project ? tr(lang, project.title) : p.alt;
@@ -31,15 +33,15 @@ function resolveFrames(lang: Locale, data: Data, projects: CmsProject[]): { fram
   });
 
   const categories = disciplines
-    .map((d) => ({ key: d.key, label: tr(lang, d.label), start: frames.findIndex((f) => f.category === d.key), count: frames.filter((f) => f.category === d.key).length }))
+    .map((d) => ({ key: d.key, label: categoryLabel(settings, d.key, lang), start: frames.findIndex((f) => f.category === d.key), count: frames.filter((f) => f.category === d.key).length }))
     .filter((c) => c.count > 0);
 
   return { frames, categories };
 }
 
 /** (01) Selected frames — a horizontal edit across every discipline, images and video. */
-export function SelectedFrames({ lang, sid, data, projects }: { lang: Locale; sid: string; data: Data; projects: CmsProject[] }) {
-  const { frames, categories } = resolveFrames(lang, data, projects);
+export function SelectedFrames({ lang, sid, data, projects, settings }: { lang: Locale; sid: string; data: Data; projects: CmsProject[]; settings: SettingsDoc }) {
+  const { frames, categories } = resolveFrames(lang, data, projects, settings);
   const c = data;
   const heading = tr(lang, c.heading);
 

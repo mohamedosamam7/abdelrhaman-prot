@@ -150,31 +150,74 @@ function MediaThumbFull({ item }: { item: PickerItem }) {
 
 /* ── Save ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Tracks unsaved edits: compares the editor's value with the last saved one,
+ * warns before closing/reloading the tab, and asks before following a link
+ * away from the editor. Call `markSaved(value)` after a successful save.
+ */
+export function useUnsaved<T>(value: T, message: string) {
+  const [saved, setSaved] = useState(() => JSON.stringify(value));
+  const dirty = JSON.stringify(value) !== saved;
+  useEffect(() => {
+    if (!dirty) return;
+    const onUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest("a[href]") as HTMLAnchorElement | null;
+      if (!a || a.target === "_blank" || e.defaultPrevented) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || url.pathname === location.pathname) return;
+      if (!window.confirm(message)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", onUnload);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [dirty, message]);
+  return { dirty, markSaved: (v: T) => setSaved(JSON.stringify(v)) };
+}
+
 export function useSave<T>(action: (v: T) => Promise<Result>) {
   const [pending, start] = useTransition();
   const [result, setResult] = useState<Result | null>(null);
-  const save = (v: T, after?: () => void) =>
+  const busy = useRef(false);
+  const save = (v: T, after?: () => void) => {
+    if (busy.current) return; // one submission at a time, even on rapid clicks
+    busy.current = true;
+    setResult(null);
     start(async () => {
       try {
         const r = await action(v);
         setResult(r);
         if (r.ok) after?.();
       } catch {
+        // Network failure or server crash: never reported as saved.
         setResult({ ok: false, error: "error" });
+      } finally {
+        busy.current = false;
       }
     });
+  };
   return { pending, result, save, setResult };
 }
 
-export function SaveBar({ t, pending, result, onSave, children }: { t: AdminDict; pending: boolean; result: Result | null; onSave: () => void; children?: React.ReactNode }) {
+export function SaveBar({ t, pending, result, onSave, dirty, children }: { t: AdminDict; pending: boolean; result: Result | null; onSave: () => void; dirty?: boolean; children?: React.ReactNode }) {
   return (
     <div className="savebar">
-      <button type="button" className="btn" onClick={onSave} disabled={pending}>
+      <button type="button" className="btn" onClick={onSave} disabled={pending} aria-busy={pending}>
         {pending ? t.common.saving : t.common.save}
       </button>
       {children}
       <div role="status" aria-live="polite" style={{ flex: 1, minWidth: 200 }}>
-        {result?.ok && <span className="status ok" style={{ display: "inline-block", margin: 0 }}>{t.common.saved}</span>}
+        {dirty && !pending && <span className="dirty">● {t.common.unsaved} </span>}
+        {result?.ok && !dirty && <span className="status ok" style={{ display: "inline-block", margin: 0 }}>{t.common.saved}</span>}
         {result && !result.ok && <ResultError t={t} result={result} />}
       </div>
     </div>

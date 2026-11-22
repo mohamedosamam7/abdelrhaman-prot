@@ -5,13 +5,15 @@ import { savePage } from "@/admin/actions";
 import type { PickerItem } from "@/admin/data";
 import type { AdminDict, AdminLang } from "@/admin/i18n";
 import { allowedSections, categories, heroSlotIds, type PageDoc, type PageKey, type SectionDoc, type SectionType } from "@/cms/schema";
-import { HeadingField, LField, MediaField, MoveButtons, SaveBar, TextField, move, useSave } from "./fields";
+import { HeadingField, LField, MediaField, MoveButtons, SaveBar, TextField, move, useSave, useUnsaved } from "./fields";
 
 type Ctx = { t: AdminDict; items: PickerItem[]; projects: { slug: string; title: string }[] };
 const E = { en: "", ar: "" };
 const EH = { en: { lead: "", emphasis: "" }, ar: { lead: "", emphasis: "" } };
 const uid = (type: string) => `${type.toLowerCase().replace(/[^a-z]/g, "").slice(0, 12)}-${Math.random().toString(36).slice(2, 8)}`;
 const FIRST_STATIC = "static:p1-r1c4";
+const introOf = (d: PageDoc) => d.intro ?? { kicker: E, title: E, lead: E };
+const metaOf = (d: PageDoc) => d.meta ?? { title: E, description: E };
 
 /** A new, valid section of each template. */
 function blank(type: SectionType): SectionDoc {
@@ -36,9 +38,10 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
   const [doc, setDoc] = useState<PageDoc>(initial);
   const [adding, setAdding] = useState<SectionType | "">("");
   const { pending, result, save } = useSave((d: PageDoc) => savePage(pageKey, d));
+  const { dirty, markSaved } = useUnsaved(doc, t.common.leave);
   const S = t.sections;
   const sections = doc.sections;
-  const set = (i: number, s: SectionDoc) => setDoc({ sections: sections.map((x, j) => (j === i ? s : x)) });
+  const set = (i: number, s: SectionDoc) => setDoc({ ...doc, sections: sections.map((x, j) => (j === i ? s : x)) });
 
   const canAdd = (type: SectionType) =>
     allowedSections[pageKey].includes(type) && !((type === "hero" || type === "contact") && sections.some((s) => s.type === type));
@@ -47,7 +50,7 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
     if (!adding) return;
     const s = blank(adding);
     // A hero always opens the page.
-    setDoc({ sections: adding === "hero" ? [s, ...sections] : [...sections, s] });
+    setDoc({ ...doc, sections: adding === "hero" ? [s, ...sections] : [...sections, s] });
     setAdding("");
   };
 
@@ -58,6 +61,21 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
       <h1>{t.pages[pageKey]}</h1>
       {pageKey !== "home" && <p className="lead">{S.system}</p>}
 
+      {pageKey !== "home" && (
+        <section className="card" aria-labelledby="pt-h">
+          <h2 id="pt-h">{S.pageText}</h2>
+          {pageKey === "work" && (
+            <>
+              <LField label={S.kicker} value={doc.intro?.kicker ?? E} onChange={(v) => setDoc({ ...doc, intro: { ...introOf(doc), kicker: v } })} t={t} max={80} />
+              <LField label={S.bigTitle} value={doc.intro?.title ?? E} onChange={(v) => setDoc({ ...doc, intro: { ...introOf(doc), title: v } })} t={t} multiline max={80} />
+              <LField label={S.lead} value={doc.intro?.lead ?? E} onChange={(v) => setDoc({ ...doc, intro: { ...introOf(doc), lead: v } })} t={t} multiline max={400} />
+            </>
+          )}
+          <LField label={S.metaTitle} value={doc.meta?.title ?? E} onChange={(v) => setDoc({ ...doc, meta: { ...metaOf(doc), title: v } })} t={t} max={90} />
+          <LField label={S.metaDescription} value={doc.meta?.description ?? E} onChange={(v) => setDoc({ ...doc, meta: { ...metaOf(doc), description: v } })} t={t} multiline max={200} />
+        </section>
+      )}
+
       {sections.map((s, i) => (
         <section className="card" key={s.id} aria-labelledby={`h-${s.id}`}>
           <div className="section-head">
@@ -65,12 +83,12 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
               {S.types[s.type]} {s.hidden && <span className="badge">{S.hidden}</span>}
             </h2>
             <div className="tools">
-              <MoveButtons t={t} index={i} count={sections.length} onMove={(a, b) => setDoc({ sections: move(sections, a, b) })} />
+              <MoveButtons t={t} index={i} count={sections.length} onMove={(a, b) => setDoc({ ...doc, sections: move(sections, a, b) })} />
               {s.type !== "hero" && s.type !== "contact" && (
                 <button
                   type="button"
                   className="btn small secondary"
-                  onClick={() => setDoc({ sections: [...sections.slice(0, i + 1), { ...structuredClone(s), id: uid(s.type) }, ...sections.slice(i + 1)] })}
+                  onClick={() => setDoc({ ...doc, sections: [...sections.slice(0, i + 1), { ...structuredClone(s), id: uid(s.type) }, ...sections.slice(i + 1)] })}
                 >
                   {S.duplicate}
                 </button>
@@ -81,7 +99,7 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
               <button
                 type="button"
                 className="btn small danger"
-                onClick={() => window.confirm(S.confirmRemove) && setDoc({ sections: sections.filter((_, j) => j !== i) })}
+                onClick={() => window.confirm(S.confirmRemove) && setDoc({ ...doc, sections: sections.filter((_, j) => j !== i) })}
               >
                 {S.remove}
               </button>
@@ -111,7 +129,7 @@ export function PageEditor({ t, lang, pageKey, initial, items, projects }: Ctx &
         </div>
       </section>
 
-      <SaveBar t={t} pending={pending} result={result} onSave={() => save(doc)} />
+      <SaveBar t={t} pending={pending} result={result} dirty={dirty} onSave={() => save(doc, () => markSaved(doc))} />
     </>
   );
 }

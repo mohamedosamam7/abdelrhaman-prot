@@ -70,7 +70,7 @@ export function ProjectList({ t, rows: initial }: { t: AdminDict; rows: Row[] })
         {create.result && !create.result.ok && <ResultError t={t} result={create.result} />}
         {create.result?.ok && "id" in create.result && (
           <p className="status ok">
-            <Link href={`/admin/projects/${create.result.id}`}>{P.title} →</Link>
+            <Link href={`/admin/projects/${create.result.id}`} prefetch={false}>{P.title} →</Link>
           </p>
         )}
       </section>
@@ -83,7 +83,7 @@ export function ProjectList({ t, rows: initial }: { t: AdminDict; rows: Row[] })
             <li key={r.id}>
               <MediaThumb item={r.cover} />
               <div className="grow">
-                <Link href={`/admin/projects/${r.id}`}>
+                <Link href={`/admin/projects/${r.id}`} prefetch={false}>
                   <strong>{r.title}</strong>
                 </Link>
                 <div className="hint" dir="ltr" style={{ textAlign: "start" }}>

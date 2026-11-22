@@ -94,3 +94,61 @@
   display: block;
   font-size: 0.86em;
 }
+
+/* ── Developer credit ──────────────────────────────────────────────────────
+   "Powered by" stays small and quiet; the name reads as a handwritten
+   signature in warm cream, underlined only on hover/focus. */
+.credit {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.poweredBy {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bottom a.signature {
+  min-height: 44px;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #ead8c4;
+  text-decoration: none;
+  text-transform: none;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+  transition: color 300ms var(--ease);
+}
+
+.bottom a.signature:hover {
+  color: #f6ead9;
+  text-decoration: underline;
+  text-decoration-color: rgb(234 216 196 / 0.5);
+}
+
+.bottom a.signature:focus-visible {
+  outline: 2px solid #ead8c4;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* The Arabic site never re-styles this English credit (font, spacing, case). */
+html[lang="ar"] .credit,
+html[lang="ar"] .credit * {
+  font-family: var(--font-grotesk), sans-serif;
+  letter-spacing: 0.08em !important;
+}
+
+html[lang="ar"] .bottom a.signature {
+  letter-spacing: 0 !important;
+}
+
+html[lang="ar"] .poweredBy {
+  text-transform: uppercase !important;
+}

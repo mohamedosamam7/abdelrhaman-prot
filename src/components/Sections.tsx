@@ -22,13 +22,13 @@ export function Sections({ lang, sections, settings, projects }: Props) {
       case "hero":
         return <HeroPhotographyGrid key={s.id} lang={lang} data={s.data} />;
       case "gallery":
-        return <SelectedFrames key={s.id} lang={lang} sid={s.id} data={s.data} projects={projects} />;
+        return <SelectedFrames key={s.id} lang={lang} sid={s.id} data={s.data} projects={projects} settings={settings} />;
       case "services":
         return <Services key={s.id} lang={lang} sid={s.id} data={s.data} />;
       case "textMedia":
         return <Approach key={s.id} lang={lang} sid={s.id} data={s.data} />;
       case "featuredProjects":
-        return <FeaturedProjects key={s.id} lang={lang} sid={s.id} data={s.data} projects={projects} />;
+        return <FeaturedProjects key={s.id} lang={lang} sid={s.id} data={s.data} projects={projects} settings={settings} />;
       case "contact":
         return <ContactCTA key={s.id} lang={lang} settings={settings} />;
     }

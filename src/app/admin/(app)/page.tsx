@@ -7,7 +7,8 @@ export default async function AdminHome() {
   const { supabase } = await requireAdmin();
   const { lang, t } = await adminLang();
   const d = await loadDrafts(supabase);
-  const empty = !d.settings && d.pages.length === 0 && d.projects.length === 0;
+  // Offered while anything built-in is still missing; it only ever adds.
+  const empty = !d.settings || d.pages.length < 3 || d.projects.length === 0;
   const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   const changes = [
     ...(d.settings && !same(d.settings.draft, d.settings.published) ? [t.nav.settings] : []),

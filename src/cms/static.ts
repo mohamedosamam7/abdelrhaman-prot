@@ -10,6 +10,7 @@
  */
 import { approach, heroCopy, heroSlots, selectedFrames, selectedFramesCopy, services } from "@/content/home";
 import { projects } from "@/content/projects";
+import { disciplines } from "@/content/disciplines";
 import { site } from "@/content/site";
 import { en } from "@/i18n/dictionaries/en";
 import { ar } from "@/i18n/dictionaries/ar";
@@ -51,6 +52,7 @@ export function staticSettings(): SettingsDoc {
       shareImage: null,
     },
     theme: { gradient: "classic" },
+    categories: Object.fromEntries(disciplines.map((d) => [d.key, d.label])) as NonNullable<SettingsDoc["categories"]>,
   };
 }
 
@@ -107,8 +109,19 @@ export function staticPages(): Record<PageKey, PageDoc> {
         { id: "contact", type: "contact", hidden: false, data: {} },
       ],
     },
-    work: { sections: [] },
-    contact: { sections: [] },
+    work: {
+      meta: { title: { en: en.meta.workTitle, ar: ar.meta.workTitle }, description: { en: en.meta.workDescription, ar: ar.meta.workDescription } },
+      intro: {
+        kicker: { en: en.work.kicker, ar: ar.work.kicker },
+        title: { en: en.work.title.join("\n"), ar: ar.work.title.join("\n") },
+        lead: { en: en.work.lead, ar: ar.work.lead },
+      },
+      sections: [],
+    },
+    contact: {
+      meta: { title: { en: en.meta.contactTitle, ar: ar.meta.contactTitle }, description: { en: en.meta.contactDescription, ar: ar.meta.contactDescription } },
+      sections: [],
+    },
   };
 }
 

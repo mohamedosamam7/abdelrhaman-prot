@@ -3,7 +3,7 @@
  * photograph (or video) it points to. This is what the public pages render.
  */
 import type { Photo } from "@/content/photos";
-import type { HeadingDoc, LText, PageKey, SectionDoc, SettingsDoc } from "./schema";
+import type { HeadingDoc, LText, PageIntroDoc, PageKey, PageMetaDoc, SectionDoc, SettingsDoc } from "./schema";
 
 export type { Photo };
 
@@ -33,6 +33,8 @@ export interface SiteContent {
   settings: SettingsDoc;
   shareImage: Photo | null;
   pages: Record<PageKey, ResolvedSection[]>;
+  /** Per-page search/sharing text and (Work) the page intro, with built-in defaults filled in. */
+  pageText: Record<PageKey, { meta?: PageMetaDoc; intro?: PageIntroDoc }>;
   /** Published (or, in preview, draft) projects in display order. */
   projects: CmsProject[];
   /** "static" = built-in content (no database or it failed), "published", or "draft" (preview). */

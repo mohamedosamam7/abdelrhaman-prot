@@ -6,6 +6,7 @@ import { Lines } from "@/components/Lines";
 import { Photo } from "@/components/Photo";
 import { ProjectGallery } from "@/components/project/ProjectGallery";
 import { discipline } from "@/content/disciplines";
+import { categoryLabel } from "@/cms/categories";
 import { getContent, getPublishedContent } from "@/cms/load";
 import { DETAIL_MAX, detailProjects, findProject, hasDetailPage, nextProject } from "@/cms/projects";
 import type { DisciplineKey } from "@/content/disciplines";
@@ -27,7 +28,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug]">): Promise<Metadata> {
   const { lang, slug } = await params;
-  const project = findProject((await getContent()).projects, slug);
+  const { projects, settings } = await getContent();
+  const project = findProject(projects, slug);
   if (!project || !isLocale(lang)) return {};
   const t = getDictionary(lang);
   const title = tr(lang, project.title);
@@ -35,13 +37,13 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug
     lang,
     `/work/${slug}`,
     title,
-    t.meta.projectDescription(title, tr(lang, discipline(project.category as DisciplineKey).label), project.images.length),
+    t.meta.projectDescription(title, categoryLabel(settings, project.category, lang), project.images.length),
   );
 }
 
 export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[slug]">) {
   const { lang, slug } = await params;
-  const { projects } = await getContent();
+  const { projects, settings } = await getContent();
   const project = findProject(projects, slug);
   if (!isLocale(lang) || !project || !hasDetailPage(project)) notFound();
   const t = getDictionary(lang);
@@ -61,14 +63,14 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[s
           </Link>
           <span aria-hidden="true">/</span>
           <Link href={localeHref(lang, `/work?category=${d.key}`)} className="link-line">
-            {tr(lang, d.label)}
+            {categoryLabel(settings, d.key, lang)}
           </Link>
         </nav>
 
         <Lines as="h1" className={`t-display ${styles.title}`} lines={[title]} />
 
         <p className={`t-meta muted ${styles.facts}`}>
-          {tr(lang, d.label)} · {t.work.frames(gallery.length)}
+          {categoryLabel(settings, d.key, lang)} · {t.work.frames(gallery.length)}
           {project.year && ` · ${project.year}`}
         </p>
 
@@ -88,7 +90,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/work/[s
           <span className={styles.nextText}>
             <span className={`t-meta muted`}>{t.project.next}</span>
             <span className={`t-display ${styles.nextTitle}`}>{tr(lang, next.title)}</span>
-            <span className="t-meta muted">{tr(lang, discipline(next.category as DisciplineKey).label)}</span>
+            <span className="t-meta muted">{categoryLabel(settings, next.category, lang)}</span>
           </span>
           <Photo
             photo={localizePhoto(next.cover, lang)}

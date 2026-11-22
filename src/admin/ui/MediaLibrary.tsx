@@ -7,7 +7,7 @@ import { deleteMedia, registerMedia, updateMedia } from "@/admin/actions";
 import type { MediaItem } from "@/admin/data";
 import type { AdminDict } from "@/admin/i18n";
 import { uploadLimits } from "@/cms/schema";
-import { LField, ResultError, SaveBar, TextField, useSave } from "./fields";
+import { LField, ResultError, SaveBar, TextField, useSave, useUnsaved } from "./fields";
 
 interface Upload {
   key: string;
@@ -192,6 +192,8 @@ function MediaDetails({ t, m, images, usedIn, onDeleted }: { t: AdminDict; m: Me
   const [focus, setFocus] = useState(m.focus);
   const [posterId, setPosterId] = useState<string | null>(m.poster_id);
   const save = useSave((v: unknown) => updateMedia(m.id, v));
+  const meta = { alt, description, focus, posterId };
+  const { dirty, markSaved } = useUnsaved(meta, t.common.leave);
   const del = useSave((id: string) => deleteMedia(id));
 
   return (
@@ -219,7 +221,7 @@ function MediaDetails({ t, m, images, usedIn, onDeleted }: { t: AdminDict; m: Me
       <p>
         <strong>{M.usedIn}:</strong> {usedIn.length ? <span dir="ltr">{usedIn.join(", ")}</span> : M.notUsed}
       </p>
-      <SaveBar t={t} pending={save.pending} result={save.result} onSave={() => save.save({ alt, description, focus, posterId }, () => router.refresh())}>
+      <SaveBar t={t} pending={save.pending} result={save.result} dirty={dirty} onSave={() => save.save(meta, () => { markSaved(meta); router.refresh(); })}>
         <button
           type="button"
           className="btn danger"

@@ -44,11 +44,13 @@ async function admin(req: NextRequest) {
       },
     },
   });
-  // Validates the session with Supabase and refreshes an expiring token.
-  const { data } = await supabase.auth.getUser();
+  // Verifies the access token's signature and expiry (locally, with the
+  // project's ES256 public keys) and refreshes an expired one.
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = typeof data?.claims?.sub === "string";
 
   const open = PUBLIC_ADMIN.some((p) => req.nextUrl.pathname === p || req.nextUrl.pathname.startsWith(`${p}/`));
-  if (!data.user && !open) {
+  if (!signedIn && !open) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
     url.search = "";

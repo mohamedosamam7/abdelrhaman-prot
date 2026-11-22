@@ -8,5 +8,8 @@ export default async function SettingsPage() {
   const { supabase } = await requireAdmin();
   const { t } = await adminLang();
   const [d, media] = await Promise.all([loadDrafts(supabase), loadMedia(supabase)]);
-  return <SettingsEditor t={t} initial={d.settings?.draft ?? staticSettings()} items={pickerItems(media)} />;
+  const fallback = staticSettings();
+  // Drafts saved before category names were editable get the built-in names.
+  const initial = d.settings ? { ...d.settings.draft, categories: d.settings.draft.categories ?? fallback.categories } : fallback;
+  return <SettingsEditor t={t} initial={initial} items={pickerItems(media)} />;
 }

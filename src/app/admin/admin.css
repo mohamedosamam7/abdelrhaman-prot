@@ -515,3 +515,41 @@ dialog.picker .pick-body {
   inset-block-start: 12px;
   inset-inline-end: 12px;
 }
+
+/* ── Loading & unsaved state ───────────────────────────────────────────── */
+
+.loading-page {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40vh;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #e4d9cc;
+  border-top-color: var(--wine);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2400ms;
+  }
+}
+
+.dirty {
+  color: var(--warn);
+  font-weight: 600;
+  font-size: 14px;
+}

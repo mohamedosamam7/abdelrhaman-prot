@@ -297,8 +297,13 @@ export async function publishAll(note: string): Promise<Result<{ problems?: stri
   }
 }
 
-/** Copies the site's built-in content into the drafts (backing up existing drafts first). */
-export async function importStatic(): Promise<Result> {
+/**
+ * Adds the site's built-in content to the dashboard as drafts — only what is
+ * missing. Existing settings, pages and projects (matched by slug) are never
+ * overwritten, so running it again changes nothing and duplicates nothing.
+ * A backup of the current drafts is recorded first.
+ */
+export async function importStatic(): Promise<Result<{ added?: string[]; skipped?: string[] }>> {
   const a = await admin();
   if (!a) return { ok: false, error: "unauthorized" };
   try {
@@ -312,24 +317,40 @@ export async function importStatic(): Promise<Result> {
     });
     if (backupError) throw backupError;
 
-    const { error: sErr } = await a.supabase.from("site_settings").upsert({ id: 1, draft: staticSettings(), updated_by: a.userId });
-    if (sErr) throw sErr;
+    const added: string[] = [];
+    const skipped: string[] = [];
+
+    if (current.settings) skipped.push("settings");
+    else {
+      const { error } = await a.supabase.from("site_settings").insert({ id: 1, draft: staticSettings(), updated_by: a.userId });
+      if (error && error.code !== "23505") throw error;
+      added.push("settings");
+    }
     const pages = staticPages();
     for (const key of pageKeys) {
-      const { error } = await a.supabase.from("pages").upsert({ key, draft: pages[key], updated_by: a.userId });
-      if (error) throw error;
+      if (current.pages.some((p) => p.key === key)) {
+        skipped.push(`page:${key}`);
+        continue;
+      }
+      const { error } = await a.supabase.from("pages").insert({ key, draft: pages[key], updated_by: a.userId });
+      if (error && error.code !== "23505") throw error;
+      added.push(`page:${key}`);
     }
+    const existing = new Set(current.projects.map((p) => p.slug));
     for (const p of staticProjects()) {
       const { featured, sort, ...doc } = p;
-      // Upsert by slug: running the import again updates rather than duplicates.
-      const { error } = await a.supabase
-        .from("projects")
-        .upsert({ slug: doc.slug, status: "published", featured, sort, draft: doc, updated_by: a.userId }, { onConflict: "slug" });
-      if (error) throw error;
+      if (existing.has(doc.slug)) {
+        skipped.push(`project:${doc.slug}`);
+        continue;
+      }
+      const { error } = await a.supabase.from("projects").insert({ slug: doc.slug, status: "published", featured, sort, draft: doc, updated_by: a.userId });
+      // 23505 = created meanwhile (double click / second tab): leave it as is.
+      if (error && error.code !== "23505") throw error;
+      added.push(`project:${doc.slug}`);
     }
-    return { ok: true };
+    return { ok: true, added, skipped };
   } catch (e) {
-    return fail(e);
+    return fail(e) as Result<{ added?: string[]; skipped?: string[] }>;
   }
 }
 

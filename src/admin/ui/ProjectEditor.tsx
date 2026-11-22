@@ -5,7 +5,7 @@ import { saveProject } from "@/admin/actions";
 import type { PickerItem, ProjectRow } from "@/admin/data";
 import type { AdminDict, AdminLang } from "@/admin/i18n";
 import { categories, projectStatuses, type ProjectDoc } from "@/cms/schema";
-import { LField, MediaField, MediaPicker, MediaThumb, MoveButtons, SaveBar, TextField, Toggle, move, useSave } from "./fields";
+import { LField, MediaField, MediaPicker, MediaThumb, MoveButtons, SaveBar, TextField, Toggle, move, useSave, useUnsaved } from "./fields";
 
 export function ProjectEditor({ t, lang, row, items }: { t: AdminDict; lang: AdminLang; row: ProjectRow; items: PickerItem[] }) {
   const [doc, setDoc] = useState<ProjectDoc>(row.draft);
@@ -13,6 +13,8 @@ export function ProjectEditor({ t, lang, row, items }: { t: AdminDict; lang: Adm
   const [featured, setFeatured] = useState(row.featured);
   const [picking, setPicking] = useState(false);
   const { pending, result, save } = useSave((v: { doc: ProjectDoc; status: string; featured: boolean }) => saveProject(row.id, v));
+  const current = { doc, status, featured };
+  const { dirty, markSaved } = useUnsaved(current, t.common.leave);
   const P = t.projects;
 
   return (
@@ -83,7 +85,7 @@ export function ProjectEditor({ t, lang, row, items }: { t: AdminDict; lang: Adm
         )}
       </section>
 
-      <SaveBar t={t} pending={pending} result={result} onSave={() => save({ doc, status, featured })}>
+      <SaveBar t={t} pending={pending} result={result} dirty={dirty} onSave={() => save(current, () => markSaved(current))}>
         <a className="btn ghost" href={`/api/preview?path=/${lang}/work/${row.slug}`} target="_blank" rel="noopener noreferrer">
           {t.common.preview} ↗
         </a>
