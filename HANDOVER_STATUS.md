@@ -240,18 +240,31 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
   - unsafe HTML renders as text; `javascript:` URLs are rejected;
   - no secrets in browser bundles; the dashboard is `noindex` and `no-store`.
 - **Lighthouse:**
-  - Local production build, mobile, 2 runs each: EN home 85, EN work 84–85, AR home 74–75, AR work 75. Accessibility, best practices and SEO are 100.
-  - That's 2–5 points below the previous round (87/89/79/77) — a small regression, not yet investigated (likely the footer font and the extra hero photos).
+  - Accessibility, best practices and SEO are 100 on the local production build.
+  - The mobile performance regression is investigated and fixed; see "Mobile Lighthouse regression" below.
   - Preview: SEO 58–61 because Vercel marks previews `noindex`.
 - **Screenshots:** `references/_review/` — `p6-dash-*` (dashboard AR/EN × 1440/390), `p5-*` (public pages), `sheet-p4-hero-*` (new hero).
 
-### Current task (in progress, 2026-11-24)
+### Mobile Lighthouse regression — investigated and fixed (2026-11-24)
 
-- **Investigating the mobile Lighthouse regression** (2–5 points vs the previous round).
-- **Method:** build `main` (`425f193`) in a separate git worktree and the current branch, serve both locally, and run Lighthouse alternately with identical settings (EN/AR home and work, mobile).
-- **Then:** inspect LCP, CLS, TBT, images, fonts and JS; fix only confirmed causes; deploy to the `feature/dashboard` preview only.
-- **Must preserve:** photo counts, image sizes, the signature, the hero animation, the card hover and the frame fix.
-- **Still pending regardless:** physical iPhone scrolling-band retest; real email delivery (custom SMTP).
+- **Method:** production's commit `425f193` (separate git worktree) and this branch, both as local production builds on the same machine. Lighthouse mobile defaults, alternating runs.
+- **Confirmed causes:**
+  1. The home page's new featured-projects section added a **third render-blocking stylesheet**, which delayed the first paint by ~450 ms (EN FCP 1,088 → 1,531 ms).
+  2. The **signature font (26 KB) loaded before the largest paint**.
+- **Ruled out:**
+  - JavaScript: main-thread time was *lower* on the branch.
+  - CLS: 0 on both.
+  - Server response: the same on both.
+- **Remaining, accepted:** on mobile, the hero's 3 extra approved photos (~74 KB) still load before the largest paint, adding up to ~200 ms on EN home. They're served byte-for-byte on purpose (see `src/lib/image.ts`), so they weren't re-encoded.
+- **Fixes:**
+  - `experimental.inlineCss` (the CSS is ~13 KB compressed), so no stylesheet request blocks the first paint.
+  - The signature font is applied only when the footer is within 800 px (`SignatureLink`).
+- **Tried and reverted, for lack of evidence:** footer `content-visibility` (didn't stop the font loading); hero `fetchPriority` (no measurable effect).
+- **Results:** median of 5 alternating runs — EN home 88 vs production 85, AR home 78 vs 79. FCP is now equal to production.
+- **Checks after the change:**
+  - The signature font is no longer fetched at load, and appears in the script font near the footer; the credit link is intact.
+  - Styled after client navigation; the dashboard login matches the previous build.
+  - UI suite 79/79.
 
 ### Open items / dependencies
 
@@ -259,7 +272,7 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 2. **Email:** Supabase's built-in mailer sends only to organization members, at a few emails/hour.
    - For client invitations and password recovery, set up custom SMTP (e.g. Resend/Brevo with the domain).
    - Then add the production URL to Auth → Redirect URLs.
-3. **Lighthouse mobile regression** of 2–5 points (see above).
+3. Lighthouse TBT on this machine is noisy (production's own commit varies 60–650 ms). Use medians of 5+ alternating runs.
 4. Firefox and WebKit ran via Playwright; no physical-device testing.
 5. Local tooling: Node 20 needs `--experimental-websocket` for supabase-js; Node 22+ is recommended.
 
