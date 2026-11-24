@@ -276,6 +276,7 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 - **Background jobs:** none running. Test servers are stopped, the temporary worktree is removed, and no automated test touches the database.
 - **Database:** pre-test state. The CMS is empty; 1 user (the owner) and 1 admin; 0 files. Migrations `0100`–`0400` are applied.
 - **iOS scrolling band:** **confirmed fixed by the owner on a real iPhone** (2026-11-24).
+- **Site URL:** stays `https://abdelrhaman-prot.vercel.app`; there is no custom domain.
 - **Performance:**
   - Home EN/AR now equals production (median of 5 runs).
   - The EN Work comparison is **inconclusive**: production's own score varied up to 11 points between rounds (77–88), so the measurement noise exceeds the difference.
@@ -285,21 +286,19 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 ### Email / client access
 
 - **Ready:**
-  - Email + password sign-in; public sign-up **disabled** (verified: `disable_signup: true`); no other providers.
-  - Invitation and recovery links land on `/admin/auth/confirm`, verified with generated links.
-- **Blocked: real email delivery.** No custom SMTP was configured when last inspected in the Supabase dashboard. SMTP settings can't be read without a Management API token, so **confirm in Supabase → Authentication → Emails → SMTP Settings**.
-  - The built-in mailer only delivers to members of the Supabase organization, a few emails per hour.
-  - Don't add the client to the organization as a workaround.
-- **SMTP setup checklist (owner):**
-  1. Pick a provider (Resend or Brevo) and verify a sending domain: add its SPF/DKIM DNS records.
-  2. Supabase → Authentication → Emails → SMTP Settings: enable custom SMTP; enter host, port, user, password (directly in the dashboard, never in chat or Git); set a sender such as `no-reply@<domain>` and the sender name "E STUDIO".
-  3. Raise the auth email rate limit (Authentication → Rate Limits) to e.g. 30/hour.
-  4. Send yourself a password reset from `/admin/login` and confirm it arrives.
-  5. Then confirm the client's email address, so the invitation can be sent with `npm run cms:admin <email> <site origin>`.
-- **Needed from the owner:** the sending domain (or the chosen provider), confirmation that SMTP is saved, and the client's admin email address.
+  - Email + password sign-in; public sign-up **disabled** (`disable_signup: true`); no other providers.
+  - Invite and recovery links redirect to `<origin>/admin/auth/confirm?next=/admin/reset`.
+- **Chosen SMTP (no custom domain needed):** Gmail — `smtp.gmail.com`, port `587` (STARTTLS; `465` is the documented alternative).
+  - Sender `memosamo7@gmail.com`, sender name `E STUDIO`, password = a Google App Password, entered by the owner directly in Supabase.
+  - Limits: ~500 emails/day (Gmail), 30/hour (Supabase default with custom SMTP).
+  - **If the Google account password changes, the App Password is revoked and mail stops** until a new one is entered.
+- **Ownership caveat:** the sender Gmail belongs to the **developer, not the client**. At handover, agree who keeps it. For client ownership, move to a client-owned Gmail (new App Password) or to a domain with Resend/Brevo. The sender isn't an admin account.
+- **Status: PENDING.** Real delivery is unconfirmed until the owner reports that the reset email arrived and the link worked. Generated-link tests don't count.
+- **Client admin account:** not created yet. It needs working SMTP plus the client's email, confirmed by the owner. Use an invitation only: no fixed password, and never share the owner's credentials.
 
 ### Backup / restore
 
+- **Latest backup:** `backups/2026-11-24T17-26-03-347Z` (0 content rows, 1 admin, 0 files). Take a new one right before the merge if content changes.
 - **Before release, and before big edits:** run `npm run cms:backup`. It's read-only, and saves all CMS tables as JSON plus every uploaded file to `backups/<timestamp>/` (git-ignored).
   - Tested 2026-11-24: 0 content rows, 1 admin, 0 files.
 - **Content rollback:** Dashboard → History → "Restore to drafts" → Publish. Every publish stores the previously published version.
@@ -308,16 +307,21 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 
 ### Production release plan (awaiting explicit approval — nothing below has been done)
 
-1. **Commit to release:** the latest `feature/dashboard` HEAD after manual acceptance. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
+1. **Commit to release:** `1828231`, the current `feature/dashboard` HEAD; app code is identical to `f756795`. If bugs are fixed after manual acceptance, use the new HEAD instead. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
    - Verified: `main` is an ancestor of `feature/dashboard`, so it's a fast-forward.
 2. **Vercel → Production environment variables** (public values only; the app reads nothing else):
    - `NEXT_PUBLIC_SUPABASE_URL` — the same value as Preview.
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — the same value as Preview.
    - `NEXT_PUBLIC_SITE_URL` — only if a custom domain is used; otherwise it defaults to the Vercel production URL.
    - **Do not add** `SUPABASE_SECRET_KEY` or `SUPABASE_DB_URL` to Vercel; they stay only in local `.env.local` for scripts.
-3. **Supabase → Authentication → URL Configuration:**
-   - Site URL: `https://abdelrhaman-prot.vercel.app` (or the custom domain).
-   - Redirect URLs: add `https://abdelrhaman-prot.vercel.app/admin/auth/confirm**` and keep the preview entry.
+3. **Supabase → Authentication → URL Configuration** (no custom domain):
+   - Site URL: `https://abdelrhaman-prot.vercel.app`
+   - Redirect URLs (keep the preview entry):
+
+     ```
+     https://abdelrhaman-prot.vercel.app/admin/auth/confirm**
+     https://abdelrhaman-prot-git-feature-dashboard-osama-3dd7.vercel.app/admin/auth/confirm**
+     ```
 4. **Migrations:** none pending. `0100`–`0400` are already applied to the single shared project.
    - Preview and production will share this database: whatever is published on the preview at release time is what production shows.
 5. **Backup:** `npm run cms:backup` immediately before the merge.
@@ -333,9 +337,10 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 
 ### Remaining blockers / untested
 
-1. Real email delivery (SMTP), which blocks inviting the client and self-service password recovery.
+1. Real email delivery: the Gmail SMTP setup by the owner is pending, and so is the confirmed reset-email test.
 2. Owner manual acceptance (`docs/manual-acceptance-ar.md`) is not yet done, apart from the iPhone scrolling item.
-3. The client's admin account doesn't exist yet: it needs SMTP plus the confirmed address.
+3. The client's admin account doesn't exist yet: it needs working SMTP plus the client's email, confirmed by the owner.
+6. Sender ownership: SMTP sends from the developer's Gmail; agree on the transfer at handover.
 4. No physical Android testing. Firefox/WebKit were tested via Playwright only.
 5. Local tooling: Node 20 needs `--experimental-websocket` (already in the npm scripts); Node 22+ is recommended.
 
