@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
    * the network address changes (shown as "Network:" when `npm run dev` starts).
    */
   allowedDevOrigins: ["192.168.1.9", "192.168.1.70", "172.20.10.8"],
+  experimental: {
+    /**
+     * The site's CSS is small (~13 KB compressed). Inlining it in the HTML
+     * removes the render-blocking stylesheet requests before the first paint
+     * (measured: three of them on the home page since the featured-projects
+     * section was added). Production builds only; see the Next.js inlineCss docs.
+     */
+    inlineCss: true,
+  },
   images: {
     // Dashboard uploads: published files (public bucket) and, for an
     // administrator's draft preview only, short-lived signed URLs.

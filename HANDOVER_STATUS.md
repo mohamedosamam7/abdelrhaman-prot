@@ -245,6 +245,14 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
   - Preview: SEO 58–61 because Vercel marks previews `noindex`.
 - **Screenshots:** `references/_review/` — `p6-dash-*` (dashboard AR/EN × 1440/390), `p5-*` (public pages), `sheet-p4-hero-*` (new hero).
 
+### Current task (in progress, 2026-11-24)
+
+- **Investigating the mobile Lighthouse regression** (2–5 points vs the previous round).
+- **Method:** build `main` (`425f193`) in a separate git worktree and the current branch, serve both locally, and run Lighthouse alternately with identical settings (EN/AR home and work, mobile).
+- **Then:** inspect LCP, CLS, TBT, images, fonts and JS; fix only confirmed causes; deploy to the `feature/dashboard` preview only.
+- **Must preserve:** photo counts, image sizes, the signature, the hero animation, the card hover and the frame fix.
+- **Still pending regardless:** physical iPhone scrolling-band retest; real email delivery (custom SMTP).
+
 ### Open items / dependencies
 
 1. **Physical iPhone retest of the scrolling band** — client to verify on the preview (Safari, scroll up/down, toolbar expanded and collapsed, rotate).

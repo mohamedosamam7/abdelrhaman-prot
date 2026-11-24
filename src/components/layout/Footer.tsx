@@ -5,9 +5,10 @@ import type { SettingsDoc } from "@/cms/schema";
 import { behanceLink } from "@/lib/contact";
 import { getDictionary, localeHref, tr, type Locale } from "@/i18n";
 import styles from "./Footer.module.css";
+import { SignatureLink } from "./SignatureLink";
 
 // Developer credit signature: a refined script (SIL Open Font License), Latin
-// subset only, not preloaded — it sits at the very end of every page.
+// subset only, not preloaded, applied only near the footer (SignatureLink).
 const signature = Allura({ subsets: ["latin"], weight: "400", display: "swap", preload: false });
 
 const CREDIT_URL = "https://www.linkedin.com/in/mohamed-osamaa77";
@@ -64,10 +65,10 @@ export function Footer({ lang, settings }: { lang: Locale; settings: SettingsDoc
         {/* Same English phrase and reading order in both languages. */}
         <p className={styles.credit} dir="ltr" lang="en">
           <span className={styles.poweredBy}>Powered by</span>{" "}
-          <a className={styles.signature} style={{ fontFamily: signature.style.fontFamily }} href={CREDIT_URL} target="_blank" rel="noopener noreferrer">
+          <SignatureLink className={styles.signature} fontFamily={signature.style.fontFamily} href={CREDIT_URL}>
             Mohamed Osama
             <span className="sr-only" lang={lang}> {t.newTab}</span>
-          </a>
+          </SignatureLink>
         </p>
         <a className="link-line" href="#top">
           {t.footer.top} ↑
