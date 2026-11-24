@@ -307,7 +307,7 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 
 ### Production release plan (awaiting explicit approval — nothing below has been done)
 
-1. **Commit to release:** `1828231`, the current `feature/dashboard` HEAD; app code is identical to `f756795`. If bugs are fixed after manual acceptance, use the new HEAD instead. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
+1. **Commit to release:** the latest `feature/dashboard` HEAD. The app code is identical to `f756795`; later commits are docs/scripts only. Check with `git diff --stat f756795 HEAD -- src next.config.ts package-lock.json` (empty). If bugs are fixed after manual acceptance, the new HEAD includes them. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
    - Verified: `main` is an ancestor of `feature/dashboard`, so it's a fast-forward.
 2. **Vercel → Production environment variables** (public values only; the app reads nothing else):
    - `NEXT_PUBLIC_SUPABASE_URL` — the same value as Preview.
