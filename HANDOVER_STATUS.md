@@ -8,7 +8,7 @@ https://abdelrhaman-prot.vercel.app.
 |---|---|
 | 1. Frontend, motion, mobile, Arabic copy/layout | **Done locally and verified** (details below) |
 | 2. Release fixes + Vercel deploy | **Done**: live at https://abdelrhaman-prot.vercel.app/en and /ar |
-| 3. Supabase dashboard | **In progress** on branch `feature/dashboard`: code built; waiting for the Supabase project (see Phase 3) |
+| 3. Supabase dashboard | **On preview for review** (`feature/dashboard`): connected to Supabase, tested end to end; not merged, Production unchanged |
 
 ## Phase 1 — completed (2026-11-22)
 
@@ -159,86 +159,115 @@ https://abdelrhaman-prot.vercel.app.
     no-JS).
   - Live URLs: https://abdelrhaman-prot.vercel.app/en and https://abdelrhaman-prot.vercel.app/ar.
     Old URLs (`/`, `/work`, `/contact?…`) redirect 308 to `/en/…` with the query kept.
-- Previous production (rollback target): `87bab58`.
+- Previous production (rollback tar## Phase 3 — Supabase content dashboard (branch `feature/dashboard`, preview only)
 
-## Phase 3 — Supabase content dashboard (in progress, branch `feature/dashboard`)
+- **Preview (site):** https://abdelrhaman-prot-git-feature-dashboard-osama-3dd7.vercel.app/en (and `/ar`)
+- **Dashboard:** https://abdelrhaman-prot-git-feature-dashboard-osama-3dd7.vercel.app/admin
+- **Production:** unchanged — `main` at `425f193`, no Supabase variables, serves the built-in content.
+- **Supabase project:** `e-studio-portfolio` (ref `efp…jyr`, eu-central-1). It is connected only to the
+  `feature/dashboard` Preview environment and to local `.env.local`. Migrations `0100`–`0400` are applied
+  (`npm run cms:migrate`).
+- **Admin account:** the client's own account, added by invitation. It is the only user.
+- **Database state:** restored to the exact pre-test state, verified against the backup — **empty CMS**.
+  On the preview, open **Overview → Import** to load the current site as drafts, then publish.
 
-Production (`main`) is untouched. The dashboard is **not connected and not verified** against a real
-database yet: no integration test has run.
+### Bugs found and fixed (all retested)
 
-### Built (2026-11-22), without credentials
+| # | Severity | Bug | Root cause | Fix | Retest |
+|---|---|---|---|---|---|
+| 1 | Blocker | Dashboard very slow: full load 5.3 s, navigation 1.1–1.8 s, save 1.3 s | Functions ran in `iad1` (USA) against Supabase in Frankfurt; every page also re-verified the session over the network (twice); the sidebar prefetched all 7 pages ×2 on every view | `vercel.json` regions `fra1`; local ES256 `getClaims()` and one cached admin check per request; prefetch on hover/focus only; `loading.tsx` | See the timings table below |
+| 2 | Blocker | **Publish failed every time** | Supabase `pg-safeupdate` rejects `UPDATE` without `WHERE` inside `publish_all()` | Migration `0400` adds explicit `WHERE` clauses | publish 30/30 |
+| 3 | Critical | Projects published after a deploy returned 404 | Root layout `dynamicParams = false` also applied to child routes | Removed (unknown languages still 404) | Pages render on demand |
+| 4 | Major | A hidden, switched-off email/WhatsApp/Behance value blocked every settings save | Validated even when switched off | Validated only while switched on | content 37/37 |
+| 5 | Major | Out-of-band DB changes (a manual restore) could stay invisible indefinitely; stale content survived rebuilds | Published-content cache had no expiry | 5-minute safety net plus a new cache key | Verified locally and on preview |
+| 6 | Major | Sitemap listed a newly published project only later | Static sitemap file | Rendered per request (from the cache) | publish 30/30 |
+| 7 | Major | iOS Safari: dark band with rounded corners crossing the content while scrolling (client recording) | The fixed frame's bottom edge sits above Safari's floating toolbar while the page renders beneath it | On touch devices the overlay has no fixed bottom edge; the page end carries the bottom corners; desktop unchanged | Emulated only — **physical iPhone pending** |
+| 8 | Minor | Email cleared after a wrong password | React resets action forms | Action returns the email | auth 40/41 |
+| 9 | Minor | New project only appeared after a reload; Create button silently disabled ~1.3 s | List state not synced; no pending label | Sync on refresh; "Saving…" label | content 37/37 |
+| 10 | Minor | Project galleries couldn't play videos | Not implemented | Poster + badge; native controls; error message + link | media 34/34 |
+| 11 | Minor | Redirects built from the server's own host (`0.0.0.0` locally) | Absolute URLs from `req.nextUrl` | Relative same-site redirects | auth 40/41 |
+| 12 | Minor | Project-card title stayed underlined after a tap | Underline rule outside the hover media query | New card interaction (below) | ui 79/79 |
+| 13 | Minor | Project titles in dashboard lists were 19 px tall tap targets | Inline links | 44 px tap height | Code change; not re-measured |
 
-- **Content model** (`src/cms/schema.ts`, zod): settings, pages (home/work/contact) as ordered
-  section lists, projects, media.
-  - Each document has a private `draft` and a `published` copy.
-  - Bilingual fields with missing-translation detection; English is the fallback on the public site.
-  - Section templates: hero (8 fixed 4:5/3:2 slots), media gallery, services, text + image/video,
-    featured projects, contact.
-  - Constraints: at most one hero, which must come first; one contact section; which templates each
-    page allows; internal links only; no raw HTML.
-- **Public site reads content** (`src/cms/load.ts`):
-  - Published content comes from one security-definer RPC, cached under tag `cms`.
-  - Drafts only in Draft Mode, and only after a server-side admin check.
-  - Falls back to the built-in content (`src/cms/static.ts`) whenever Supabase is unconfigured,
-    fails or holds invalid data, so pages never blank.
-  - Verified on the fallback: identical rendering and all public regression suites pass.
-- **Database** (`supabase/migrations/20261122000100_cms.sql`):
-  - Tables with RLS on all of them; admins only via the `admins` table, which has no
-    self-insert path.
-  - `published_content()` exposes published data only; `publish_all()` is transactional and
-    snapshots the outgoing live version into `revisions`.
-  - Storage: private `media-draft`, public `media`, admin-only object policies, 50 MB per-file
-    limit.
-- **Dashboard** (`/admin`, Arabic by default with English available, separate root layout,
-  `noindex`, `no-store`):
-  - Sign-in, sign-out, password recovery via email link, setup and no-access screens.
-  - Overview: unpublished changes, publish with a note, preview, missing translations, one-time
-    import of the current site (backs up existing drafts first).
-  - Settings editor and page section editor (add, edit, duplicate, reorder with buttons, hide,
-    delete with confirmation, preview).
-  - Projects: create, unique slug, status, featured flag, order, bilingual text, cover, ordered
-    gallery; drafts can be deleted, published projects are archived instead.
-  - Media library: direct upload to the private bucket with progress, cancel and retry; the server
-    verifies the stored type and size; bilingual alt text and description; focus point; video
-    poster; usage display; deletion blocked while in use.
-  - History: restore a version into the drafts.
-- **Video:** `InlineVideo` plays muted inline video only while visible, pauses offscreen and loads
-  nothing until on screen. Hero videos wait for the intro to finish; reduced motion or blocked
-  autoplay shows a poster with a play button; audio never autoplays. A video must have a poster to
-  be used anywhere.
-- **Scripts:**
-  - `npm run cms:check` checks configuration without printing secrets.
-  - `npm run cms:migrate` applies migrations transactionally and records them.
-  - `npm run cms:admin -- <email> <origin>` sends an invitation (the person sets their own
-    password) and grants admin.
+### Features added this round
 
-### Isolation
+- **Editing coverage:**
+  - Newly editable: the Work page intro and the Work/Contact search & sharing text (Pages); category display names (Settings).
+  - Intentionally fixed: interface microcopy (buttons, lightbox, 404, accessibility labels), the logo and the layout.
+- **Import:** only adds what is missing. Never overwrites edits or duplicates (tested).
+- **Editor protection:**
+  - Unsaved-changes warning on in-app links and on tab close/reload; a visible "Unsaved changes" state.
+  - No double submissions; a failure never shows as saved or published.
+- **Hero:** 12 / 9 / 6 photos (desktop / tablet / mobile) at the existing sizes. Four new distinct photos: L5 `p9-r2c3`, P5 `p2-r3c3`, L6 `p7-r2c2`, P6 `p8-r3c3`.
+  - Uses 12 dashboard slots; older 8-slot drafts stay valid.
+  - The intro waits only for on-screen photos, and the logo stays within the first screen.
+  - Hidden-layout photos are never downloaded (on a phone, 6 desktop/tablet-only photos: 0 requests).
+- **Project cards (Home featured + Work):**
+  - Fine-pointer hover: no underline; 1.025 image zoom; a small arrow fading in with 4 px movement over 300 ms; no layout shift.
+  - Keyboard focus shows the arrow; touch gets brief pressed feedback only; reduced motion is static; the arrow is mirrored in Arabic.
+- **Footer credit:** "Powered by Mohamed Osama" in both languages, LTR, script signature (Allura, OFL), LinkedIn in a new tab.
+- **Client guide:** `docs/client-guide-ar.md` (Arabic).
 
-- The Supabase project is connected to **Preview and Development only**.
-- Production has no Supabase variables, so it keeps serving the built-in content.
-- Test content lives only in that project.
+### Dashboard timings (preview, real browser, median of 3 runs, ms)
 
-### Still to do (needs the Supabase project)
+| Action | Before | After fixes | Final build |
+|---|---|---|---|
+| Full reload `/admin` | 5,264 | 1,086 | 1,110 |
+| Sign-in → overview | 2,067 | 1,110 | 1,212 |
+| Settings | 1,849 | 857 | 622 |
+| Pages → Home | 1,664 | 778 | 656 |
+| Pages → Work | 1,432 | 348 | 449 |
+| Projects | 1,523 | 705 | 501 |
+| Media | 1,675 | 723 | 632 |
+| History | 1,705 | 705 | 510 |
+| Overview (in-app) | 1,130 | 353 | 335 |
+| Save draft | 1,334 | 328 | 412 |
 
-1. Set the variables in `.env.local`; run `npm run cms:check`, `npm run cms:migrate`, then
-   `npm run cms:admin`.
-2. Run the end-to-end matrix:
-   - Access denial: anonymous and non-admin.
-   - RLS and storage permissions.
-   - Login, logout and expired sessions.
-   - Uploads, including invalid type and size.
-   - Image → video → image replacement.
-   - Sections: add, edit, reorder, hide, delete.
-   - Drafts vs published; persistence; AR/EN rendering after publish.
-   - Projects, settings, media deletion protection; mobile layout and video fallback.
-   - Clean up the test content.
-3. Arabic client guide (draft below), then your review, then any production merge.
+Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fra1`).
 
-### Known notes
+### Test results (final preview build unless noted; the Supabase DB was isolated test data)
 
-- supabase-js warns that Node 20 is deprecated. Local Node is 20.11; Node 22+ is recommended
-  locally. Vercel's runtime is configured separately.
-- Videos are not transcoded; the limits are shown in the library.
+- **auth 40/41:** the 1 item is BLOCKED by design — the forgot-password form isn't submitted (built-in mailer quota); recovery verified with generated links.
+- **content 37/37**, **publish 30/30**, **media 34/34**, **security 30/30**.
+- **UI 79/79:** hero rows, touch frame, project cards.
+- **Public site:**
+  - live HTTP/SEO 37/37; page audit 60/60 (0 overflow, broken images or clipped text);
+  - hero, every case: 0 overlap, 0 replays, two sizes;
+  - interactions 34/35 — the failure is the synthetic-gesture tool; the raw-touch swipe test passes on the same build;
+  - WebKit 26/26, Firefox (phone-size with touch, and desktop) 26/26.
+- **Security checks covered:**
+  - anonymous and non-admin users can't read drafts, write, grant admin, publish, use private storage, or call server actions;
+  - unsafe HTML renders as text; `javascript:` URLs are rejected;
+  - no secrets in browser bundles; the dashboard is `noindex` and `no-store`.
+- **Lighthouse:**
+  - Local production build, mobile, 2 runs each: EN home 85, EN work 84–85, AR home 74–75, AR work 75. Accessibility, best practices and SEO are 100.
+  - That's 2–5 points below the previous round (87/89/79/77) — a small regression, not yet investigated (likely the footer font and the extra hero photos).
+  - Preview: SEO 58–61 because Vercel marks previews `noindex`.
+- **Screenshots:** `references/_review/` — `p6-dash-*` (dashboard AR/EN × 1440/390), `p5-*` (public pages), `sheet-p4-hero-*` (new hero).
+
+### Open items / dependencies
+
+1. **Physical iPhone retest of the scrolling band** — client to verify on the preview (Safari, scroll up/down, toolbar expanded and collapsed, rotate).
+2. **Email:** Supabase's built-in mailer sends only to organization members, at a few emails/hour.
+   - For client invitations and password recovery, set up custom SMTP (e.g. Resend/Brevo with the domain).
+   - Then add the production URL to Auth → Redirect URLs.
+3. **Lighthouse mobile regression** of 2–5 points (see above).
+4. Firefox and WebKit ran via Playwright; no physical-device testing.
+5. Local tooling: Node 20 needs `--experimental-websocket` for supabase-js; Node 22+ is recommended.
+
+### To go to production (only after the client approves)
+
+1. Vercel → Environment Variables:
+   - add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for **Production**;
+   - set `NEXT_PUBLIC_SITE_URL` if a custom domain is added.
+2. Supabase → Auth → URL Configuration:
+   - Site URL = production URL;
+   - add `https://<production>/admin/auth/confirm**`.
+3. Merge `feature/dashboard` → `main` (fast-forward), then verify live.
+4. In the dashboard: Import → review → Publish.
+5. **Rollback:** Vercel → Deployments → previous production deployment (`425f193`) → "Promote to Production" or "Instant Rollback". The DB needs no rollback for the site to work: without Supabase variables it serves the built-in content.
+
+ in the library.
 
 ## Original Phase 3 requirements (agreed)
 

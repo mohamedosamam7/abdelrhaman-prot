@@ -553,3 +553,10 @@ dialog.picker .pick-body {
   font-weight: 600;
   font-size: 14px;
 }
+
+/* Project titles in lists: a full 44px tap target, same look. */
+.list > li .grow > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
