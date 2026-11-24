@@ -1,7 +1,12 @@
-/* Content-height hero on the strongest burgundy gradient.
-   --pad is both the outer padding and the gap between photos. */
+/* The hero is a one-screen overview: all 12 photos, the caption and the
+   hero's bottom edge fit the first screen below the header.
+   --pad   outer padding and the gap between photos
+   --capgap space between the photos and the caption
+   --cap   height reserved for the caption (its tallest wrap per layout) */
 .hero {
   --pad: clamp(8px, 0.85vw, 12px);
+  --capgap: clamp(10px, 1.2vw, 16px);
+  --cap: 24px;
   position: relative;
   /* Never a scroll anchor. On reload Chrome restores the scroll position
      relative to a saved anchor element; at the top of the page that was a
@@ -9,14 +14,26 @@
      so the page was scrolled down (~225–266px) to "keep" it in place. */
   overflow-anchor: none;
   padding-top: calc(var(--top) + var(--pad));
-  padding-bottom: clamp(16px, 2vw, 28px);
+  padding-bottom: var(--pad);
   overflow: hidden;
   background: var(--grad-hero);
 }
 
+@media (max-width: 1023px) {
+  .hero {
+    --cap: 40px;
+  }
+}
+
+@media (max-width: 599px) {
+  .hero {
+    --cap: 64px;
+  }
+}
+
 .inner {
   display: grid;
-  gap: clamp(12px, 1.4vw, 20px);
+  gap: var(--capgap);
   padding-inline: var(--pad);
 }
 
@@ -28,18 +45,21 @@
 }
 
 /* ── Composition ────────────────────────────────────────────────────────
-   A uniform grid on every screen: all tiles in a layout share one width and
-   one height. Columns fill the stage; the row height --th is the preferred
-   ratio of the tile width (--r), lowered to fit all rows in the first screen
-   (the *small* viewport, browser bars shown, above the frame's bottom edge),
-   but never below --rmin × width: too short a screen scrolls normally.
+   A uniform grid of all 12 photos: mobile 3 × 4, tablet and desktop 4 × 3.
+   Every tile in a layout has one width (columns fill the stage) and one
+   height --th: the preferred ratio of the width (--r), lowered so that all
+   rows, the caption and the hero's padding fit the *small* viewport (100svh:
+   browser bars shown) between the header and the frame's bottom edge.
    Photos fill their tile (object-fit: cover, CMS focal point).
-   Rows: heroRows in content/home.ts — rows are flattened into the grid. */
+   Order: heroRows in content/home.ts — rows are flattened into the grid. */
 
 .layout {
   --tw: calc((100cqw - (var(--cols) - 1) * var(--pad)) / var(--cols));
-  --fit: calc((100svh - var(--top) - var(--pad) - var(--frame) - var(--pad) - (var(--rows) - 1) * var(--pad)) / var(--rows));
-  --th: min(calc(var(--tw) * var(--r)), max(calc(var(--tw) * var(--rmin)), var(--fit)));
+  --fit: calc(
+    (100svh - var(--top) - var(--pad) - (var(--rows) - 1) * var(--pad) - var(--capgap) - var(--cap) - var(--pad) - var(--frame)) /
+      var(--rows)
+  );
+  --th: max(40px, min(calc(var(--tw) * var(--r)), var(--fit)));
   display: none;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   grid-auto-rows: var(--th);
@@ -68,24 +88,21 @@
   --cols: 4;
   --rows: 3;
   --r: 0.8;
-  --rmin: 0.56;
   display: grid;
 }
 
-/* Tablet: 3 × 3. */
+/* Tablet: 4 × 3. */
 .tablet {
-  --cols: 3;
+  --cols: 4;
   --rows: 3;
   --r: 1;
-  --rmin: 0.7;
 }
 
-/* Mobile: 2 × 3. */
+/* Mobile: 3 × 4. */
 .mobile {
-  --cols: 2;
-  --rows: 3;
-  --r: 1.2;
-  --rmin: 0.7;
+  --cols: 3;
+  --rows: 4;
+  --r: 1.25;
 }
 
 @media (max-width: 1023px) {

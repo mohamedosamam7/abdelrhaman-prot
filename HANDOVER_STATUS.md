@@ -198,7 +198,7 @@ https://abdelrhaman-prot.vercel.app.
 - **Editor protection:**
   - Unsaved-changes warning on in-app links and on tab close/reload; a visible "Unsaved changes" state.
   - No double submissions; a failure never shows as saved or published.
-- **Hero:** 12 / 9 / 6 photos (desktop / tablet / mobile) at the existing sizes. Four new distinct photos: L5 `p9-r2c3`, P5 `p2-r3c3`, L6 `p7-r2c2`, P6 `p8-r3c3`.
+- **Hero:** all 12 photos on every device (2026-11-24 client change): 4 × 3 on desktop and tablet, 3 × 4 on mobile, equal tiles that fit the first screen. Four new distinct photos: L5 `p9-r2c3`, P5 `p2-r3c3`, L6 `p7-r2c2`, P6 `p8-r3c3`.
   - Uses 12 dashboard slots; older 8-slot drafts stay valid.
   - The intro waits only for on-screen photos, and the logo stays within the first screen.
   - Hidden-layout photos are never downloaded (on a phone, 6 desktop/tablet-only photos: 0 requests).

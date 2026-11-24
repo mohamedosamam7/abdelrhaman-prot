@@ -38,9 +38,9 @@ const ROT = { desktop: 4, tablet: 3.5, mobile: 3 } as const;
  * the tile (height × 1.5); a 4:5 photo renders at the tile width.
  */
 const SIZES = {
-  desktop: { portrait: "24vw", landscape: "27vw" },
-  tablet: { portrait: "32vw", landscape: "47vw" },
-  mobile: { portrait: "48vw", landscape: "84vw" },
+  desktop: { portrait: "25vw", landscape: "25vw" },
+  tablet: { portrait: "24vw", landscape: "36vw" },
+  mobile: { portrait: "30vw", landscape: "56vw" },
 } as const;
 
 /**

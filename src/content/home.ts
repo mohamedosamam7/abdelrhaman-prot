@@ -18,11 +18,12 @@ import { photo } from "./photos";
  * object-position (x% y%) that keeps the subject in frame.
  *
  * `heroRows` lists, per layout, which slots appear, row by row (left → right in
- * English, mirrored in Arabic). Every layout is a uniform grid — all tiles the
- * same size, photos cropped to fill with their focal point:
- *   desktop (≥1024px)  4 columns × 3 rows — 12 photos
- *   tablet  (600–1023) 3 columns × 3 rows — 9 photos
- *   mobile  (<600px)   2 columns × 3 rows — 6 photos
+ * English, mirrored in Arabic). All 12 slots appear on every device, in the
+ * same order, as a uniform grid that fits the first screen — all tiles the same
+ * size, photos cropped to fill with their focal point:
+ *   desktop (≥1024px)  4 columns × 3 rows
+ *   tablet  (600–1023) 4 columns × 3 rows
+ *   mobile  (<600px)   3 columns × 4 rows
  */
 export type HeroSlotType = "portrait" | "landscape";
 export type HeroLayout = "desktop" | "tablet" | "mobile";
@@ -63,11 +64,17 @@ export const heroRows: Record<HeroLayout, string[][]> = {
     ["L5", "P5", "L6", "P6"],
   ],
   tablet: [
-    ["P1", "L1", "P2"],
-    ["L2", "P4", "L3"],
-    ["P5", "L5", "P6"],
+    ["L1", "P1", "L2", "P2"],
+    ["P3", "L3", "P4", "L4"],
+    ["L5", "P5", "L6", "P6"],
   ],
-  mobile: [["P1", "P4"], ["L1", "P5"], ["P6", "L5"]],
+  // Same reading order as desktop, three per row.
+  mobile: [
+    ["L1", "P1", "L2"],
+    ["P2", "P3", "L3"],
+    ["P4", "L4", "L5"],
+    ["P5", "L6", "P6"],
+  ],
 };
 
 export const heroCopy = {
