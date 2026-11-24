@@ -17,12 +17,12 @@ import { photo } from "./photos";
  * Images are cropped with object-fit: cover; `focus` is the CSS
  * object-position (x% y%) that keeps the subject in frame.
  *
- * `heroRows` lists, per layout, which slots sit in each row (left → right).
- * More photos means more rows at the same photo sizes — the hero grows taller,
- * nothing is squeezed:
- *   desktop (≥1024px)  three staggered rows of four (L P L P / P L P L / L P L P) — 12 photos
- *   tablet  (600–1023) P L P / L P L / P L P                                      — 9 photos
- *   mobile  (<600px)   P P / L P / P L, sized to fit the first screen               — 6 photos
+ * `heroRows` lists, per layout, which slots appear, row by row (left → right in
+ * English, mirrored in Arabic). Every layout is a uniform grid — all tiles the
+ * same size, photos cropped to fill with their focal point:
+ *   desktop (≥1024px)  4 columns × 3 rows — 12 photos
+ *   tablet  (600–1023) 3 columns × 3 rows — 9 photos
+ *   mobile  (<600px)   2 columns × 3 rows — 6 photos
  */
 export type HeroSlotType = "portrait" | "landscape";
 export type HeroLayout = "desktop" | "tablet" | "mobile";

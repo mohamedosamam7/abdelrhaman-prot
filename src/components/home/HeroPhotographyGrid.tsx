@@ -32,11 +32,15 @@ const LAYOUTS: HeroLayout[] = ["desktop", "tablet", "mobile"];
 // photography always fills the opening.
 const T = { close: 1.45, closeDur: 0.3, beat: 0.04, open: 0.55, expand: 1.2, stagger: 0.045, reveal: 0.45, rimOut: 0.45 };
 const ROT = { desktop: 4, tablet: 3.5, mobile: 3 } as const;
-/** Rendered tile widths per layout (with headroom for the intro's early scale-up). */
+/**
+ * Rendered image widths per layout. Tiles are uniform and photos are cropped
+ * with object-fit: cover, so a 3:2 photo in a taller tile renders wider than
+ * the tile (height × 1.5); a 4:5 photo renders at the tile width.
+ */
 const SIZES = {
-  desktop: { portrait: "16vw", landscape: "28vw" },
-  tablet: { portrait: "22vw", landscape: "38vw" },
-  mobile: { portrait: "36vw", landscape: "64vw" },
+  desktop: { portrait: "24vw", landscape: "27vw" },
+  tablet: { portrait: "32vw", landscape: "47vw" },
+  mobile: { portrait: "48vw", landscape: "84vw" },
 } as const;
 
 /**
@@ -220,7 +224,7 @@ export function HeroPhotographyGrid({ lang, data }: { lang: Locale; data: Resolv
 
   return (
     <section ref={root} className={`theme-dark ${styles.hero}`} data-intro={introPlayed ? undefined : ""} aria-labelledby="hero-title">
-      <div className={`container ${styles.inner}`}>
+      <div className={styles.inner}>
         <div className={styles.stage}>
           {LAYOUTS.map((layout) => (
             <div key={layout} className={`${styles.layout} ${styles[layout]}`} data-layout={layout}>
@@ -230,7 +234,7 @@ export function HeroPhotographyGrid({ lang, data }: { lang: Locale; data: Resolv
                     const slot = SLOT[id];
                     const p = localizePhoto(slot.photo, lang);
                     return (
-                      <div key={id} className={`${styles.tile} ${styles[slot.type]}`} data-slot={id} data-type={slot.type}>
+                      <div key={id} className={styles.tile} data-slot={id} data-type={slot.type}>
                         <Image
                           src={p.src}
                           alt={p.alt}

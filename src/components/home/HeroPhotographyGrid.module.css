@@ -1,7 +1,9 @@
-/* Content-height hero on the strongest burgundy gradient. */
+/* Content-height hero on the strongest burgundy gradient.
+   --pad is both the outer padding and the gap between photos. */
 .hero {
+  --pad: clamp(8px, 0.85vw, 12px);
   position: relative;
-  padding-top: calc(var(--top) + clamp(18px, 2.6vw, 44px));
+  padding-top: calc(var(--top) + var(--pad));
   padding-bottom: clamp(16px, 2vw, 28px);
   overflow: hidden;
   background: var(--grad-hero);
@@ -9,39 +11,42 @@
 
 .inner {
   display: grid;
-  gap: clamp(14px, 1.6vw, 22px);
+  gap: clamp(12px, 1.4vw, 20px);
+  padding-inline: var(--pad);
 }
 
-/* The stage is a size container: photo sizes are derived from its width. */
+/* The stage is a size container: tile sizes are derived from its width. */
 .stage {
   position: relative;
   width: 100%;
-  max-width: 1180px;
-  margin-inline: auto;
   container-type: inline-size;
 }
 
 /* ── Composition ────────────────────────────────────────────────────────
-   Exactly two photo sizes per layout, from shared tokens (never per slot):
-     --pw  portrait width  (4:5)     --lw  landscape width (3:2)
-   Desktop and tablet derive both from one row height --h, so every photo in
-   the composition shares the same height. Rows: heroRows in content/home.ts. */
+   A uniform grid on every screen: all tiles in a layout share one width and
+   one height. Columns fill the stage; the row height --th is the preferred
+   ratio of the tile width (--r), lowered to fit all rows in the first screen
+   (the *small* viewport, browser bars shown, above the frame's bottom edge),
+   but never below --rmin × width: too short a screen scrolls normally.
+   Photos fill their tile (object-fit: cover, CMS focal point).
+   Rows: heroRows in content/home.ts — rows are flattened into the grid. */
 
 .layout {
+  --tw: calc((100cqw - (var(--cols) - 1) * var(--pad)) / var(--cols));
+  --fit: calc((100svh - var(--top) - var(--pad) - var(--frame) - var(--pad) - (var(--rows) - 1) * var(--pad)) / var(--rows));
+  --th: min(calc(var(--tw) * var(--r)), max(calc(var(--tw) * var(--rmin)), var(--fit)));
   display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--g);
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-auto-rows: var(--th);
+  gap: var(--pad);
 }
 
 .row {
-  display: flex;
-  gap: var(--g);
+  display: contents;
 }
 
 .tile {
   position: relative;
-  flex: none;
   overflow: hidden;
   background: var(--ink-2);
   box-shadow: 0 18px 40px -24px rgb(14 2 5 / 0.8);
@@ -49,62 +54,33 @@
   will-change: transform;
 }
 
-.portrait {
-  width: var(--pw);
-  aspect-ratio: 4 / 5;
-}
-
-.landscape {
-  width: var(--lw);
-  aspect-ratio: 3 / 2;
-}
-
 .tile img {
   object-fit: cover;
 }
 
-/* Desktop: two rows of four (L P L P / P L P L), staggered by --shift. */
+/* Desktop: 4 × 3. */
 .desktop {
-  --g: 28px;
-  --h: min(210px, calc((100cqw - 3 * var(--g)) / 5.05));
-  --shift: calc(var(--h) * 0.45);
-  --pw: calc(var(--h) * 0.8);
-  --lw: calc(var(--h) * 1.5);
-  display: flex;
+  --cols: 4;
+  --rows: 3;
+  --r: 0.8;
+  --rmin: 0.56;
+  display: grid;
 }
 
-.desktop .row:first-child {
-  margin-inline-end: var(--shift);
-}
-
-.desktop .row:last-child {
-  margin-inline-start: var(--shift);
-}
-
-/* Tablet: P L P / L P L, centred. */
+/* Tablet: 3 × 3. */
 .tablet {
-  --g: 18px;
-  --h: min(190px, calc((100cqw - 2 * var(--g)) / 3.8));
-  --pw: calc(var(--h) * 0.8);
-  --lw: calc(var(--h) * 1.5);
+  --cols: 3;
+  --rows: 3;
+  --r: 1;
+  --rmin: 0.7;
 }
 
-/* Mobile: three centred rows sharing one height (P P / L P / P L), so all six
-   photos fit the first screen. --h is the smaller of: the widest row (L + P =
-   2.3 × --h) fitting the width, and three rows fitting the *small* viewport
-   height (100svh = browser bars shown) below the header and the hero's top
-   padding, above the bottom frame. */
+/* Mobile: 2 × 3. */
 .mobile {
-  --g: 8px;
-  --h: max(
-    72px,
-    min(
-      calc((100cqw - var(--g)) / 2.3),
-      calc((100svh - var(--top) - 18px - var(--frame) - 12px - 2 * var(--g)) / 3)
-    )
-  );
-  --pw: calc(var(--h) * 0.8);
-  --lw: calc(var(--h) * 1.5);
+  --cols: 2;
+  --rows: 3;
+  --r: 1.2;
+  --rmin: 0.7;
 }
 
 @media (max-width: 1023px) {
@@ -113,7 +89,7 @@
   }
 
   .tablet {
-    display: flex;
+    display: grid;
   }
 }
 
@@ -123,7 +99,7 @@
   }
 
   .mobile {
-    display: flex;
+    display: grid;
   }
 }
 
@@ -160,8 +136,7 @@
   flex-wrap: wrap;
   gap: 6px 24px;
   width: 100%;
-  max-width: 1180px;
-  margin-inline: auto;
+  padding-inline: 4px;
 }
 
 .title {
