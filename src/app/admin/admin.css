@@ -516,6 +516,17 @@ dialog.picker .pick-body {
   inset-inline-end: 12px;
 }
 
+/* On the dark sign-in background the light-theme secondary button (wine on
+   transparent) was nearly invisible; use the paper colour instead. */
+.lang-switch .btn.secondary {
+  color: #f3ebdd;
+  border-color: rgb(243 235 221 / 0.5);
+}
+
+.lang-switch .btn.secondary:hover {
+  background: rgb(243 235 221 / 0.12);
+}
+
 /* ── Loading & unsaved state ───────────────────────────────────────────── */
 
 .loading-page {
