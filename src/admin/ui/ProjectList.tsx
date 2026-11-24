@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createProject, deleteDraftProject, reorderProjects } from "@/admin/actions";
 import type { PickerItem } from "@/admin/data";
 import type { AdminDict } from "@/admin/i18n";
@@ -22,6 +22,8 @@ interface Row {
 export function ProjectList({ t, rows: initial }: { t: AdminDict; rows: Row[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
+  // Show the server's list again after a refresh (e.g. a project was just created).
+  useEffect(() => setRows(initial), [initial]);
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const create = useSave(createProject);
@@ -65,7 +67,7 @@ export function ProjectList({ t, rows: initial }: { t: AdminDict; rows: Row[] })
             })
           }
         >
-          {P.create}
+          {create.pending ? t.common.saving : P.create}
         </button>
         {create.result && !create.result.ok && <ResultError t={t} result={create.result} />}
         {create.result?.ok && "id" in create.result && (

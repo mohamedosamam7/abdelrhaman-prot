@@ -1,5 +1,6 @@
 import { draftMode } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { localRedirect } from "@/lib/redirect";
 import { getAdmin } from "@/lib/supabase/admin-auth";
 
 /**
@@ -13,5 +14,5 @@ export async function GET(req: NextRequest) {
   if (!/^\/(en|ar)(\/[a-z0-9/-]*)?(\?[a-z=&-]*)?$/.test(path)) return new NextResponse("Invalid path", { status: 400 });
   if (!(await getAdmin())) return new NextResponse("Unauthorized", { status: 401 });
   (await draftMode()).enable();
-  return NextResponse.redirect(new URL(path, req.nextUrl.origin));
+  return localRedirect(path);
 }

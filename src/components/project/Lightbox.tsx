@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Photo } from "@/content/photos";
 import { getDictionary, type Locale } from "@/i18n";
 import { serveOriginal } from "@/lib/image";
@@ -68,7 +68,7 @@ export function Lightbox({ lang, photos, index, onChange, title }: Props) {
       className={`theme-dark ${styles.dialog}`}
       aria-label={t.viewer(title)}
       onKeyDown={onKeyDown}
-      onPointerDown={(e) => (startX.current = e.clientX)}
+      onPointerDown={(e) => (startX.current = (e.target as HTMLElement).closest("video") ? null : e.clientX)}
       onPointerUp={(e) => {
         if (startX.current === null) return;
         const dx = e.clientX - startX.current;
@@ -100,7 +100,11 @@ export function Lightbox({ lang, photos, index, onChange, title }: Props) {
               key={current.id}
               style={{ maxWidth: current.width * 1.5, maxHeight: current.height * 1.5 }}
             >
-              <Image src={current.src} alt={current.alt} fill sizes="100vw" quality={85} unoptimized={serveOriginal(current.width)} className={styles.image} />
+              {current.videoSrc ? (
+                <LightboxVideo key={current.id} src={current.videoSrc} poster={current.src} label={current.alt} failed={t.videoFailed} openFile={t.openFile} />
+              ) : (
+                <Image src={current.src} alt={current.alt} fill sizes="100vw" quality={85} unoptimized={serveOriginal(current.width)} className={styles.image} />
+              )}
             </div>
             <figcaption className={`t-meta muted ${styles.caption}`}>{current.alt}</figcaption>
           </figure>
@@ -129,4 +133,24 @@ export function Lightbox({ lang, photos, index, onChange, title }: Props) {
       )}
     </dialog>
   );
+}
+
+/**
+ * A project video in the viewer: native controls, inline, never autoplayed
+ * with sound; only the selected video is loaded. A file that fails to load
+ * shows a message and a direct link instead of a blank frame.
+ */
+function LightboxVideo({ src, poster, label, failed, openFile }: { src: string; poster: string; label: string; failed: string; openFile: string }) {
+  const [error, setError] = useState(false);
+  if (error) {
+    return (
+      <p className={styles.videoError} role="alert">
+        {failed}{" "}
+        <a href={src} target="_blank" rel="noopener noreferrer">
+          {openFile}
+        </a>
+      </p>
+    );
+  }
+  return <video className={styles.video} src={src} poster={poster} controls playsInline preload="metadata" aria-label={label} onError={() => setError(true)} />;
 }

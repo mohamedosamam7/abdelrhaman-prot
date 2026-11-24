@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PlayIcon } from "@/components/Icons";
 import { Photo } from "@/components/Photo";
 import type { Photo as PhotoData } from "@/content/photos";
 import { getDictionary, type Locale } from "@/i18n";
@@ -34,6 +35,12 @@ export function ProjectGallery({ lang, photos, title }: { lang: Locale; photos: 
                 priority={i < 3}
                 className="hover-zoom"
               />
+              {/* Videos show their poster here and play in the viewer. */}
+              {p.videoSrc && (
+                <span className={styles.play} aria-hidden="true">
+                  <PlayIcon />
+                </span>
+              )}
             </button>
           </li>
         ))}

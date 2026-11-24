@@ -12,7 +12,7 @@ export function LoginForm({ t, expired }: { t: AdminDict; expired: boolean }) {
       {state.error && <p className="status err" role="alert">{t.auth.failed}</p>}
       <label className="field">
         <span>{t.auth.email}</span>
-        <input type="email" name="email" autoComplete="username" required dir="ltr" />
+        <input key={state.email ?? ""} type="email" name="email" autoComplete="username" required dir="ltr" defaultValue={state.email ?? ""} />
       </label>
       <label className="field">
         <span>{t.auth.password}</span>

@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { localRedirect } from "@/lib/redirect";
 import { sessionClient } from "@/lib/supabase/server";
 
 /**
@@ -21,5 +22,5 @@ export async function GET(req: NextRequest) {
   if (code) ok = !(await supabase.auth.exchangeCodeForSession(code)).error;
   else if (tokenHash && type) ok = !(await supabase.auth.verifyOtp({ token_hash: tokenHash, type })).error;
 
-  return NextResponse.redirect(new URL(ok ? next : "/admin/login?expired=1", url.origin));
+  return localRedirect(ok ? next : "/admin/login?expired=1");
 }

@@ -70,18 +70,17 @@ export const Settings = z.object({
       handle: text(60).regex(/^@?[A-Za-z0-9._]{1,30}$/, "Instagram handle"),
       url: z.url().regex(/^https:\/\/(www\.)?instagram\.com\//, "Must be an instagram.com link"),
     }),
-    behance: z.object({
-      enabled: z.boolean(),
-      handle: text(60),
-      url: z.union([z.literal(""), z.url().regex(/^https:\/\/(www\.)?behance\.net\//, "Must be a behance.net link")]),
-    }),
-    email: z.object({ enabled: z.boolean(), value: z.union([z.literal(""), z.email()]) }),
-    whatsapp: z.object({
-      enabled: z.boolean(),
-      number: z.union([z.literal(""), z.string().regex(/^\d{8,15}$/, "Digits only, with country code")]),
-      display: text(30),
-      message: L(200),
-    }),
+    // A channel's value is only validated while it is switched on: a hidden,
+    // switched-off field must never block saving.
+    behance: z
+      .object({ enabled: z.boolean(), handle: text(60), url: text(300) })
+      .refine((b) => !b.enabled || b.url === "" || /^https:\/\/(www\.)?behance\.net\/[^\s]*$/.test(b.url), { message: "Must be a behance.net link", path: ["url"] }),
+    email: z
+      .object({ enabled: z.boolean(), value: text(200) })
+      .refine((e) => !e.enabled || e.value === "" || z.email().safeParse(e.value).success, { message: "Invalid email address", path: ["value"] }),
+    whatsapp: z
+      .object({ enabled: z.boolean(), number: text(20), display: text(30), message: L(200) })
+      .refine((w) => !w.enabled || w.number === "" || /^\d{8,15}$/.test(w.number), { message: "Digits only, with country code", path: ["number"] }),
   }),
   seo: z.object({ homeTitle: L(90), homeDescription: L(200), shareImage: MediaRef.nullable() }),
   theme: z.object({ gradient: z.enum(gradients) }),

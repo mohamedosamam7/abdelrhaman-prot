@@ -17,7 +17,9 @@ const editorial = Instrument_Serif({ subsets: ["latin"], weight: "400", style: [
 const arabicSans = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500"], variable: "--font-arabic-sans", display: "swap", preload: false });
 const arabicSerif = Amiri({ subsets: ["arabic"], weight: "400", variable: "--font-arabic-serif", display: "swap", preload: false });
 
-export const dynamicParams = false;
+// No `dynamicParams = false` here: it also applied to child routes and made
+// project pages published after the build 404. Unknown languages still 404
+// (notFound() below), and the proxy only lets /en and /ar through.
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }

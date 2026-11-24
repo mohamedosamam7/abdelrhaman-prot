@@ -23,3 +23,25 @@
     gap: 8px;
   }
 }
+
+.item {
+  position: relative;
+}
+
+.play {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-start: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(243 235 221 / 0.92);
+  color: var(--wine-850);
+  pointer-events: none;
+}
+
+.play svg {
+  margin-left: 3px; /* optical centring; never mirrored */
+}

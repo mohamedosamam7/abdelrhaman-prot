@@ -39,14 +39,16 @@ export async function setAdminLang(lang: "ar" | "en") {
 
 const Credentials = z.object({ email: z.email().max(200), password: z.string().min(1).max(200) });
 
-export async function signIn(_: unknown, form: FormData): Promise<{ error?: "failed" | "unavailable" }> {
-  if (!supabaseConfigured) return { error: "unavailable" };
+/** Returns the typed email on failure: React resets the form after an action, and the address shouldn't have to be typed again. */
+export async function signIn(_: unknown, form: FormData): Promise<{ error?: "failed" | "unavailable"; email?: string }> {
+  const email = String(form.get("email") ?? "").slice(0, 200);
+  if (!supabaseConfigured) return { error: "unavailable", email };
   const parsed = Credentials.safeParse({ email: form.get("email"), password: form.get("password") });
-  if (!parsed.success) return { error: "failed" };
+  if (!parsed.success) return { error: "failed", email };
   const supabase = await sessionClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   // One generic message: never reveal whether the address exists.
-  if (error) return { error: "failed" };
+  if (error) return { error: "failed", email };
   redirect("/admin");
 }
 

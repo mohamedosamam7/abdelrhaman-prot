@@ -57,6 +57,8 @@ export const ar: Dictionary = {
     next: "التالية",
     prevLabel: "الصورة السابقة",
     nextLabel: "الصورة التالية",
+    videoFailed: "تعذّر تشغيل هذا الفيديو هنا.",
+    openFile: "افتح الملف",
   },
   contact: {
     label: "تواصل معنا",

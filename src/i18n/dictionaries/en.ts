@@ -47,6 +47,8 @@ export const en = {
     next: "Next",
     prevLabel: "Previous image",
     nextLabel: "Next image",
+    videoFailed: "This video can't be played here.",
+    openFile: "Open the file",
   },
   contact: {
     label: "Contact",
