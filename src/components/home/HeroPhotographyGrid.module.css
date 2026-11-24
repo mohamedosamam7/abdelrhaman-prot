@@ -89,11 +89,22 @@
   --lw: calc(var(--h) * 1.5);
 }
 
-/* Mobile: two equal portraits side by side, the landscape full width below. */
+/* Mobile: three centred rows sharing one height (P P / L P / P L), so all six
+   photos fit the first screen. --h is the smaller of: the widest row (L + P =
+   2.3 × --h) fitting the width, and three rows fitting the *small* viewport
+   height (100svh = browser bars shown) below the header and the hero's top
+   padding, above the bottom frame. */
 .mobile {
-  --g: 10px;
-  --pw: calc((100cqw - var(--g)) / 2);
-  --lw: 100cqw;
+  --g: 8px;
+  --h: max(
+    72px,
+    min(
+      calc((100cqw - var(--g)) / 2.3),
+      calc((100svh - var(--top) - 18px - var(--frame) - 12px - 2 * var(--g)) / 3)
+    )
+  );
+  --pw: calc(var(--h) * 0.8);
+  --lw: calc(var(--h) * 1.5);
 }
 
 @media (max-width: 1023px) {

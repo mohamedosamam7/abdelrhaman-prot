@@ -36,7 +36,7 @@ const ROT = { desktop: 4, tablet: 3.5, mobile: 3 } as const;
 const SIZES = {
   desktop: { portrait: "16vw", landscape: "28vw" },
   tablet: { portrait: "22vw", landscape: "38vw" },
-  mobile: { portrait: "46vw", landscape: "92vw" },
+  mobile: { portrait: "36vw", landscape: "64vw" },
 } as const;
 
 /**

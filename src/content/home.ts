@@ -22,7 +22,7 @@ import { photo } from "./photos";
  * nothing is squeezed:
  *   desktop (≥1024px)  three staggered rows of four (L P L P / P L P L / L P L P) — 12 photos
  *   tablet  (600–1023) P L P / L P L / P L P                                      — 9 photos
- *   mobile  (<600px)   two portraits, landscape below, twice                       — 6 photos
+ *   mobile  (<600px)   P P / L P / P L, sized to fit the first screen               — 6 photos
  */
 export type HeroSlotType = "portrait" | "landscape";
 export type HeroLayout = "desktop" | "tablet" | "mobile";
@@ -67,7 +67,7 @@ export const heroRows: Record<HeroLayout, string[][]> = {
     ["L2", "P4", "L3"],
     ["P5", "L5", "P6"],
   ],
-  mobile: [["P1", "P4"], ["L1"], ["P5", "P6"], ["L5"]],
+  mobile: [["P1", "P4"], ["L1", "P5"], ["P6", "L5"]],
 };
 
 export const heroCopy = {
