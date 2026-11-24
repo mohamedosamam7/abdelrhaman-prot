@@ -354,9 +354,34 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
    - Production pages are indexable: no `noindex` on public pages, `noindex` on `/admin`.
 8. **Rollback:** Vercel Instant Rollback to the `425f193` deployment. Database rollback isn't needed for that. Content mistakes are fixed via History.
 
+### Dashboard verification — 2026-11-25
+
+- **Backup first:** `backups/2026-11-24T22-15-35-575Z` (0 content rows, 1 admin, 0 files).
+- **No isolated test database is available.** There is no Docker or local Postgres on this machine, and only one Supabase project, which is shared by Production and Preview. So no create/edit/import/publish/restore/delete was run through the dashboard, and the old e2e suites, which write test accounts and rows, were not run.
+- **Passed this run:**
+  - **Database permissions (Production, inside a transaction that is always rolled back):**
+    - Anonymous and signed-in non-admin users can read no content and no admin rows; every write, storage upload and `publish_all` is refused (42501).
+    - An admin can save a draft, and `publish_all` copies drafts to published and stores a restore snapshot.
+    - Row counts are identical before and after.
+  - **Catalog (read-only):** RLS and admin-only policies on all content tables and both buckets; anon has no table grants; bucket limits are 50 MB with image/video types only.
+  - **Server actions (code review):** all 12 mutating actions check for an admin, and RLS backs them.
+  - **Validation and mapping (41 checks against the real modules):**
+    - Slugs, contact fields (switched-off fields never block saving), SEO length, focus points and media references.
+    - Upload limits; all 12 hero slots, each used once on every layout.
+    - A replaced photo and focus point reach the public render; an 8-slot draft still renders 12; a missing upload falls back to the built-in photo.
+  - **Production, anonymous and read-only:**
+    - All admin routes redirect to login; login/forgot are `noindex` + `no-store`; `/admin/reset` without a session redirects; `/api/preview` returns 401.
+    - Login in AR/EN with the language switch, RTL, desktop and mobile with no sideways scroll; wrong credentials (non-existent address) show a message and keep the email.
+- **Fixed and deployed (`82a95ac`):** the sign-in pages' language button was nearly invisible on the dark background; it is now about 14:1 contrast.
+- **Blocked or untested (needs an isolated Supabase project or an authorised session):**
+  - The signed-in dashboard UI: navigation, unsaved-change prompt, editors, import, draft preview, publish, history restore.
+  - Hero slot replacement in the UI; project create/edit/order/archive; real uploads (image/video), invalid-file messages, delete-in-use protection.
+  - Logout and the Back button; client invitation.
+- **To unblock:** create a second free Supabase project for testing, and put its keys in a local, git-ignored `.env.test.local` (never in chat). The existing e2e suites can then run against a local build pointed at it.
+
 ### Remaining blockers / untested
 
-1. Client invitation email: not tested yet. Password-reset delivery is verified for the owner's account only.
+1. Client invitation email: not tested yet; no client account exists (only the owner, 2026-11-25). Password-reset delivery is verified for the owner's account only.
 2. Owner manual acceptance (`docs/manual-acceptance-ar.md`) is not yet done, apart from the iPhone scrolling item.
 3. The client's admin account doesn't exist yet: it needs working SMTP plus the client's email, confirmed by the owner.
 6. Sender ownership: SMTP sends from the developer's Gmail; agree on the transfer at handover.
