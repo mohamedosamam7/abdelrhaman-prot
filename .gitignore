@@ -34,3 +34,6 @@ desktop.ini
 
 # Design references and client source files (kept locally, not published)
 references/
+
+# CMS backups (npm run cms:backup) contain content and uploads — keep out of Git
+/backups/

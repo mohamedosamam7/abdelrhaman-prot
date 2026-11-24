@@ -266,29 +266,78 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
   - Styled after client navigation; the dashboard login matches the previous build.
   - UI suite 79/79.
 
-### Open items / dependencies
+### Handover state (2026-11-24, before the 19:20 Cairo client handover)
 
-1. **Physical iPhone retest of the scrolling band** — client to verify on the preview (Safari, scroll up/down, toolbar expanded and collapsed, rotate).
-2. **Email:** Supabase's built-in mailer sends only to organization members, at a few emails/hour.
-   - For client invitations and password recovery, set up custom SMTP (e.g. Resend/Brevo with the domain).
-   - Then add the production URL to Auth → Redirect URLs.
-3. Lighthouse TBT on this machine is noisy (production's own commit varies 60–650 ms). Use medians of 5+ alternating runs.
-4. Firefox and WebKit ran via Playwright; no physical-device testing.
-5. Local tooling: Node 20 needs `--experimental-websocket` for supabase-js; Node 22+ is recommended.
+- **Preview under manual test:** branch `feature/dashboard`.
+  - App code is identical to `f756795`. Later commits only add docs and the backup script.
+  - The exact HEAD is in the latest commit on the branch.
+  - No code changes during manual testing unless a bug is reported.
+- **Production:** `main` = `425f193`, unchanged (no CMS, built-in content).
+- **Background jobs:** none running. Test servers are stopped, the temporary worktree is removed, and no automated test touches the database.
+- **Database:** pre-test state. The CMS is empty; 1 user (the owner) and 1 admin; 0 files. Migrations `0100`–`0400` are applied.
+- **iOS scrolling band:** **confirmed fixed by the owner on a real iPhone** (2026-11-24).
+- **Performance:**
+  - Home EN/AR now equals production (median of 5 runs).
+  - The EN Work comparison is **inconclusive**: production's own score varied up to 11 points between rounds (77–88), so the measurement noise exceeds the difference.
+  - No further score chasing planned.
+- **Manual acceptance checklist:** `docs/manual-acceptance-ar.md`. Every item is "not tested" until the owner confirms it.
 
-### To go to production (only after the client approves)
+### Email / client access
 
-1. Vercel → Environment Variables:
-   - add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for **Production**;
-   - set `NEXT_PUBLIC_SITE_URL` if a custom domain is added.
-2. Supabase → Auth → URL Configuration:
-   - Site URL = production URL;
-   - add `https://<production>/admin/auth/confirm**`.
-3. Merge `feature/dashboard` → `main` (fast-forward), then verify live.
-4. In the dashboard: Import → review → Publish.
-5. **Rollback:** Vercel → Deployments → previous production deployment (`425f193`) → "Promote to Production" or "Instant Rollback". The DB needs no rollback for the site to work: without Supabase variables it serves the built-in content.
+- **Ready:**
+  - Email + password sign-in; public sign-up **disabled** (verified: `disable_signup: true`); no other providers.
+  - Invitation and recovery links land on `/admin/auth/confirm`, verified with generated links.
+- **Blocked: real email delivery.** No custom SMTP was configured when last inspected in the Supabase dashboard. SMTP settings can't be read without a Management API token, so **confirm in Supabase → Authentication → Emails → SMTP Settings**.
+  - The built-in mailer only delivers to members of the Supabase organization, a few emails per hour.
+  - Don't add the client to the organization as a workaround.
+- **SMTP setup checklist (owner):**
+  1. Pick a provider (Resend or Brevo) and verify a sending domain: add its SPF/DKIM DNS records.
+  2. Supabase → Authentication → Emails → SMTP Settings: enable custom SMTP; enter host, port, user, password (directly in the dashboard, never in chat or Git); set a sender such as `no-reply@<domain>` and the sender name "E STUDIO".
+  3. Raise the auth email rate limit (Authentication → Rate Limits) to e.g. 30/hour.
+  4. Send yourself a password reset from `/admin/login` and confirm it arrives.
+  5. Then confirm the client's email address, so the invitation can be sent with `npm run cms:admin <email> <site origin>`.
+- **Needed from the owner:** the sending domain (or the chosen provider), confirmation that SMTP is saved, and the client's admin email address.
 
- in the library.
+### Backup / restore
+
+- **Before release, and before big edits:** run `npm run cms:backup`. It's read-only, and saves all CMS tables as JSON plus every uploaded file to `backups/<timestamp>/` (git-ignored).
+  - Tested 2026-11-24: 0 content rows, 1 admin, 0 files.
+- **Content rollback:** Dashboard → History → "Restore to drafts" → Publish. Every publish stores the previously published version.
+- **Full restore** from a backup folder is a developer task: re-insert the rows and re-upload the files. Never restore over a newer database without a fresh backup first.
+- **Code rollback:** Vercel → Deployments → the previous production deployment → "Instant Rollback". Without Supabase variables, production serves the built-in content.
+
+### Production release plan (awaiting explicit approval — nothing below has been done)
+
+1. **Commit to release:** the latest `feature/dashboard` HEAD after manual acceptance. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
+   - Verified: `main` is an ancestor of `feature/dashboard`, so it's a fast-forward.
+2. **Vercel → Production environment variables** (public values only; the app reads nothing else):
+   - `NEXT_PUBLIC_SUPABASE_URL` — the same value as Preview.
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — the same value as Preview.
+   - `NEXT_PUBLIC_SITE_URL` — only if a custom domain is used; otherwise it defaults to the Vercel production URL.
+   - **Do not add** `SUPABASE_SECRET_KEY` or `SUPABASE_DB_URL` to Vercel; they stay only in local `.env.local` for scripts.
+3. **Supabase → Authentication → URL Configuration:**
+   - Site URL: `https://abdelrhaman-prot.vercel.app` (or the custom domain).
+   - Redirect URLs: add `https://abdelrhaman-prot.vercel.app/admin/auth/confirm**` and keep the preview entry.
+4. **Migrations:** none pending. `0100`–`0400` are already applied to the single shared project.
+   - Preview and production will share this database: whatever is published on the preview at release time is what production shows.
+5. **Backup:** `npm run cms:backup` immediately before the merge.
+6. **Release:** `git merge --ff-only feature/dashboard` on `main`, then push; Vercel builds production.
+7. **Smoke checks after release:**
+   - `/en` and `/ar` (home, work, a project, contact): status 200, styled, photos load, footer credit.
+   - `/xyz` returns 404.
+   - `/sitemap.xml` and `/robots.txt` use the production domain.
+   - `/admin` redirects to login; sign in; Overview loads.
+   - Make a small edit → preview → publish → visible publicly → restore it from History.
+   - Production pages are indexable: no `noindex` on public pages, `noindex` on `/admin`.
+8. **Rollback:** Vercel Instant Rollback to the `425f193` deployment. Database rollback isn't needed for that. Content mistakes are fixed via History.
+
+### Remaining blockers / untested
+
+1. Real email delivery (SMTP), which blocks inviting the client and self-service password recovery.
+2. Owner manual acceptance (`docs/manual-acceptance-ar.md`) is not yet done, apart from the iPhone scrolling item.
+3. The client's admin account doesn't exist yet: it needs SMTP plus the confirmed address.
+4. No physical Android testing. Firefox/WebKit were tested via Playwright only.
+5. Local tooling: Node 20 needs `--experimental-websocket` (already in the npm scripts); Node 22+ is recommended.
 
 ## Original Phase 3 requirements (agreed)
 

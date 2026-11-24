@@ -10,7 +10,8 @@
     "placeholders": "node scripts/generate-placeholders.ts",
     "cms:check": "node --experimental-websocket scripts/cms/check.mjs",
     "cms:migrate": "node --experimental-websocket scripts/cms/migrate.mjs",
-    "cms:admin": "node --experimental-websocket scripts/cms/create-admin.mjs"
+    "cms:admin": "node --experimental-websocket scripts/cms/create-admin.mjs",
+    "cms:backup": "node --experimental-websocket scripts/cms/backup.mjs"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
