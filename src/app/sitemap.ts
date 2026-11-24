@@ -4,6 +4,10 @@ import { detailProjects } from "@/cms/projects";
 import { localeHref, locales, siteUrl } from "@/i18n/config";
 
 /** Every public page in both languages, each listing its alternate. */
+// Rendered per request (from the cached published content) so a project is
+// listed as soon as it is published, not after the file's next regeneration.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { projects } = await getPublishedContent();
   const paths = ["/", "/work", "/contact", ...detailProjects(projects).map((p) => `/work/${p.slug}`)];
