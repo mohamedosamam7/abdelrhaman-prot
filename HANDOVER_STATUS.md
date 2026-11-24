@@ -293,7 +293,8 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
   - Limits: ~500 emails/day (Gmail), 30/hour (Supabase default with custom SMTP).
   - **If the Google account password changes, the App Password is revoked and mail stops** until a new one is entered.
 - **Ownership caveat:** the sender Gmail belongs to the **developer, not the client**. At handover, agree who keeps it. For client ownership, move to a client-owned Gmail (new App Password) or to a domain with Resend/Brevo. The sender isn't an admin account.
-- **Status: PENDING.** Real delivery is unconfirmed until the owner reports that the reset email arrived and the link worked. Generated-link tests don't count.
+- **Status:** Gmail SMTP is saved in Supabase. On 2026-11-24 the owner manually verified that the password-reset email arrived, the link worked, and sign-in with the new password succeeded. **This covers the owner's account only.**
+- **Client invitation delivery: not tested yet.**
 - **Client admin account:** not created yet. It needs working SMTP plus the client's email, confirmed by the owner. Use an invitation only: no fixed password, and never share the owner's credentials.
 
 ### Backup / restore
@@ -337,7 +338,7 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 
 ### Remaining blockers / untested
 
-1. Real email delivery: the Gmail SMTP setup by the owner is pending, and so is the confirmed reset-email test.
+1. Client invitation email: not tested yet. Password-reset delivery is verified for the owner's account only.
 2. Owner manual acceptance (`docs/manual-acceptance-ar.md`) is not yet done, apart from the iPhone scrolling item.
 3. The client's admin account doesn't exist yet: it needs working SMTP plus the client's email, confirmed by the owner.
 6. Sender ownership: SMTP sends from the developer's Gmail; agree on the transfer at handover.
