@@ -120,7 +120,10 @@
 
 .lensWrap {
   position: absolute;
-  inset: 0;
+  /* Centred in the part of the composition that fits the first screen, so a
+     taller hero (more rows) never pushes the logo below the fold. */
+  inset: 0 0 auto;
+  height: min(100%, calc(100svh - var(--top) - 40px));
   z-index: 20;
   display: none;
   place-items: center;

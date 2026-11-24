@@ -91,7 +91,7 @@ export type SettingsDoc = z.infer<typeof Settings>;
 
 /* ── Sections ───────────────────────────────────────────────────────────── */
 
-export const heroSlotIds = ["L1", "P1", "L2", "P2", "P3", "L3", "P4", "L4"] as const;
+export const heroSlotIds = ["L1", "P1", "L2", "P2", "P3", "L3", "P4", "L4", "L5", "P5", "L6", "P6"] as const;
 export type HeroSlotId = (typeof heroSlotIds)[number];
 
 const base = { id: z.string().regex(/^[a-z0-9-]{4,40}$/), hidden: z.boolean() };
@@ -102,11 +102,16 @@ export const HeroSection = z.object({
   data: z.object({
     title: L(120),
     meta: L(160),
-    /** The eight fixed slots: L* are 3:2 landscapes, P* are 4:5 portraits. */
+    /**
+     * The fixed slots: L* are 3:2 landscapes, P* are 4:5 portraits. Drafts
+     * saved before the hero grew (8 slots) stay valid; the missing slots use
+     * the built-in photographs until they are set.
+     */
     slots: z
       .array(z.object({ id: z.enum(heroSlotIds), media: MediaRef, focus: Focus }))
-      .length(8)
-      .refine((s) => new Set(s.map((x) => x.id)).size === 8, "Each hero slot appears once"),
+      .min(8)
+      .max(heroSlotIds.length)
+      .refine((s) => new Set(s.map((x) => x.id)).size === s.length, "Each hero slot appears once"),
   }),
 });
 

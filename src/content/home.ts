@@ -18,9 +18,11 @@ import { photo } from "./photos";
  * object-position (x% y%) that keeps the subject in frame.
  *
  * `heroRows` lists, per layout, which slots sit in each row (left → right).
- *   desktop (≥1024px)  two staggered rows of four  — 8 photos
- *   tablet  (600–1023) P L P / L P L               — 6 photos
- *   mobile  (<600px)   two portraits, landscape below — 3 photos
+ * More photos means more rows at the same photo sizes — the hero grows taller,
+ * nothing is squeezed:
+ *   desktop (≥1024px)  three staggered rows of four (L P L P / P L P L / L P L P) — 12 photos
+ *   tablet  (600–1023) P L P / L P L / P L P                                      — 9 photos
+ *   mobile  (<600px)   two portraits, landscape below, twice                       — 6 photos
  */
 export type HeroSlotType = "portrait" | "landscape";
 export type HeroLayout = "desktop" | "tablet" | "mobile";
@@ -48,18 +50,24 @@ export const heroSlots: HeroSlot[] = [
   { id: "L3", photo: "p6-r2c4", type: "landscape", focus: "50% 40%" },
   { id: "P4", photo: "p1-r3c1", type: "portrait", focus: "52% 40%" },
   { id: "L4", photo: "p3-r2c1", type: "landscape", focus: "50% 50%" },
+  { id: "L5", photo: "p9-r2c3", type: "landscape", focus: "50% 55%" },
+  { id: "P5", photo: "p2-r3c3", type: "portrait", focus: "50% 40%" },
+  { id: "L6", photo: "p7-r2c2", type: "landscape", focus: "50% 45%" },
+  { id: "P6", photo: "p8-r3c3", type: "portrait", focus: "50% 40%" },
 ];
 
 export const heroRows: Record<HeroLayout, string[][]> = {
   desktop: [
     ["L1", "P1", "L2", "P2"],
     ["P3", "L3", "P4", "L4"],
+    ["L5", "P5", "L6", "P6"],
   ],
   tablet: [
     ["P1", "L1", "P2"],
     ["L2", "P4", "L3"],
+    ["P5", "L5", "P6"],
   ],
-  mobile: [["P1", "P4"], ["L1"]],
+  mobile: [["P1", "P4"], ["L1"], ["P5", "P6"], ["L5"]],
 };
 
 export const heroCopy = {

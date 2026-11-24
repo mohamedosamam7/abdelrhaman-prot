@@ -58,19 +58,26 @@ const staticSlot = (id: string) => {
 
 export function resolveSection(s: SectionDoc, media: MediaLookup): ResolvedSection | null {
   switch (s.type) {
-    case "hero":
+    case "hero": {
+      // Every slot of the composition, in the order of heroSlots: the saved
+      // choice where there is one, the built-in photograph otherwise.
+      const saved = new Map(s.data.slots.map((x) => [x.id, x]));
       return {
         ...s,
         data: {
           ...s.data,
-          slots: s.data.slots.map((slot) => ({
-            id: slot.id,
-            type: slot.id.startsWith("P") ? ("portrait" as const) : ("landscape" as const),
-            photo: media(slot.media) ?? staticSlot(slot.id)!,
-            focus: slot.focus,
-          })),
+          slots: heroSlots.map((def) => {
+            const slot = saved.get(def.id as (typeof s.data.slots)[number]["id"]);
+            return {
+              id: def.id,
+              type: def.type,
+              photo: (slot && media(slot.media)) || staticSlot(def.id)!,
+              focus: slot?.focus ?? def.focus,
+            };
+          }),
         },
       };
+    }
     case "gallery": {
       const items = s.data.items.flatMap((it) => {
         const photo = media(it.media);

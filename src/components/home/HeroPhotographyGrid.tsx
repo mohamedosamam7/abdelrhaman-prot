@@ -190,7 +190,12 @@ export function HeroPhotographyGrid({ lang, data }: { lang: Locale; data: Resolv
       // bounded wait for the photos to decode.
       const lensAnim = lens.querySelector("svg")?.getAnimations?.()[0];
       const elapsed = () => (Number(lensAnim?.currentTime) || 0) / 1000;
-      const imgs = tiles.map((t) => t.querySelector("img")).filter(Boolean) as HTMLImageElement[];
+      // Only photos that are on screen once in place are waited for: rows below
+      // the fold stay lazy and never hold up the intro.
+      const imgs = tiles
+        .filter((_, i) => rects[i].top < window.innerHeight)
+        .map((t) => t.querySelector("img"))
+        .filter(Boolean) as HTMLImageElement[];
       const decoded = Promise.all(imgs.map((i) => i.decode().catch(() => undefined)));
       const capped = new Promise((r) => setTimeout(r, 1200));
       const start = contextSafe!(() => {

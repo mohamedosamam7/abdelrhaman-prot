@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
+import { ArrowRight } from "@/components/Icons";
 import { getDictionary, type Locale } from "@/i18n";
 import styles from "./WorkGallery.module.css";
 
@@ -107,7 +108,11 @@ export function WorkGalleryView({ lang, cards, filters, labels, active, showFilt
                 />
               </span>
               <span className={styles.meta}>
-                <span className={`t-serif ${styles.title}`}>{c.title}</span>
+                <span className={styles.titleRow}>
+                  <span className={`t-serif ${styles.title}`}>{c.title}</span>
+                  {/* Always in the layout (invisible until hover/focus), so it never shifts the title. */}
+                  <ArrowRight size={16} className={`dir-icon ${styles.arrow}`} />
+                </span>
                 <span className={styles.details}>
                   {c.categoryLabel} · {c.frames}
                 </span>

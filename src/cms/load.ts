@@ -28,8 +28,12 @@ const fetchPublished = unstable_cache(
     const raw = data as { settings: unknown; pages: Record<string, unknown>; projects: unknown[]; media: (Omit<MediaRow, "url"> & { path: string })[] };
     return { ...raw, media: (raw.media ?? []).map((m) => ({ ...m, url: publicMediaUrl(m.path) })) };
   },
-  ["cms-published-v1"],
-  { tags: [CMS_TAG] },
+  ["cms-published-v2"],
+  // Publishing invalidates the tag at once. The time limit is a safety net:
+  // a change made outside the dashboard (a manual restore, a support fix in
+  // the database) still reaches the site within 5 minutes, and a cached copy
+  // can't outlive a redeploy indefinitely.
+  { tags: [CMS_TAG], revalidate: 300 },
 );
 
 /** Drafts for an administrator's preview (never cached, never public). */

@@ -9,7 +9,14 @@ import { requireAdmin } from "@/lib/supabase/admin-auth";
 /** Fills page text added after a draft was saved (meta, Work intro) with the built-in text. */
 function withDefaults(draft: PageDoc | undefined, fallback: PageDoc): PageDoc {
   if (!draft) return fallback;
-  return { ...draft, meta: draft.meta ?? fallback.meta, ...(fallback.intro ? { intro: draft.intro ?? fallback.intro } : {}) };
+  const fallbackHero = fallback.sections.find((s) => s.type === "hero");
+  // Hero drafts saved before the hero grew get the new slots (built-in photos), in order.
+  const sections = draft.sections.map((s) => {
+    if (s.type !== "hero" || fallbackHero?.type !== "hero") return s;
+    const have = new Map(s.data.slots.map((x) => [x.id, x]));
+    return { ...s, data: { ...s.data, slots: fallbackHero.data.slots.map((d) => have.get(d.id) ?? d) } };
+  });
+  return { ...draft, sections, meta: draft.meta ?? fallback.meta, ...(fallback.intro ? { intro: draft.intro ?? fallback.intro } : {}) };
 }
 
 export default async function PagePage({ params }: PageProps<"/admin/pages/[key]">) {
