@@ -3,6 +3,11 @@
 .hero {
   --pad: clamp(8px, 0.85vw, 12px);
   position: relative;
+  /* Never a scroll anchor. On reload Chrome restores the scroll position
+     relative to a saved anchor element; at the top of the page that was a
+     hero photo, which during the intro is moved to the lens by transforms —
+     so the page was scrolled down (~225–266px) to "keep" it in place. */
+  overflow-anchor: none;
   padding-top: calc(var(--top) + var(--pad));
   padding-bottom: clamp(16px, 2vw, 28px);
   overflow: hidden;
