@@ -8,7 +8,7 @@ https://abdelrhaman-prot.vercel.app.
 |---|---|
 | 1. Frontend, motion, mobile, Arabic copy/layout | **Done locally and verified** (details below) |
 | 2. Release fixes + Vercel deploy | **Done**: live at https://abdelrhaman-prot.vercel.app/en and /ar |
-| 3. Supabase dashboard | **On preview for review** (`feature/dashboard`): connected to Supabase, tested end to end; not merged, Production unchanged |
+| 3. Supabase dashboard | **Released to Production 2026-11-24** (`main` = `e1ec770`). Owner manual acceptance still pending |
 
 ## Phase 1 — completed (2026-11-22)
 
@@ -163,7 +163,7 @@ https://abdelrhaman-prot.vercel.app.
 
 - **Preview (site):** https://abdelrhaman-prot-git-feature-dashboard-osama-3dd7.vercel.app/en (and `/ar`)
 - **Dashboard:** https://abdelrhaman-prot-git-feature-dashboard-osama-3dd7.vercel.app/admin
-- **Production:** unchanged — `main` at `425f193`, no Supabase variables, serves the built-in content.
+- **Production:** released 2026-11-24 — `main` = `e1ec770`; see "Production release — done" below.
 - **Supabase project:** `e-studio-portfolio` (ref `efp…jyr`, eu-central-1). It is connected only to the
   `feature/dashboard` Preview environment and to local `.env.local`. Migrations `0100`–`0400` are applied
   (`npm run cms:migrate`).
@@ -272,7 +272,7 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
   - App code is identical to `f756795`. Later commits only add docs and the backup script.
   - The exact HEAD is in the latest commit on the branch.
   - No code changes during manual testing unless a bug is reported.
-- **Production:** `main` = `425f193`, unchanged (no CMS, built-in content).
+- **Production:** released 2026-11-24 (`main` = `e1ec770`); see "Production release — done".
 - **Background jobs:** none running. Test servers are stopped, the temporary worktree is removed, and no automated test touches the database.
 - **Database:** pre-test state. The CMS is empty; 1 user (the owner) and 1 admin; 0 files. Migrations `0100`–`0400` are applied.
 - **iOS scrolling band:** **confirmed fixed by the owner on a real iPhone** (2026-11-24).
@@ -306,7 +306,25 @@ Server response per request went from 480–930 ms (`iad1`) to 130–440 ms (`fr
 - **Full restore** from a backup folder is a developer task: re-insert the rows and re-upload the files. Never restore over a newer database without a fresh backup first.
 - **Code rollback:** Vercel → Deployments → the previous production deployment → "Instant Rollback". Without Supabase variables, production serves the built-in content.
 
-### Production release plan (awaiting explicit approval — nothing below has been done)
+### Production release — done (2026-11-24, approved by the owner)
+
+- **Live:** https://abdelrhaman-prot.vercel.app/ar and /en. **Dashboard:** https://abdelrhaman-prot.vercel.app/admin
+- **Steps taken:**
+  1. Backup `backups/2026-11-24T17-59-14-342Z` (0 content rows, 1 admin, 0 files).
+  2. Owner added the Production environment to `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` on Vercel, and set the Supabase Site URL and production redirect URL.
+  3. `main` fast-forwarded `425f193` → `e1ec770` and pushed; the Vercel production deployment succeeded.
+- **Automated smoke checks (no Vercel bypass header, so as a public visitor):**
+  - `/en`, `/ar`, work, contact and a project page return 200 without a Vercel login; correct `lang`/`dir`; footer credit and LinkedIn link present; CSS inline; public pages indexable.
+  - `/ar/xyz` returns 404; in a browser it renders the Arabic 404 (RTL, home links). The raw HTML shell has no `lang` until hydration.
+  - `/sitemap.xml` and `/robots.txt` use the production domain.
+  - `/admin`, `/admin/settings`, `/admin/projects`, `/admin/media` redirect (307) to `/admin/login`. The login page loads (Supabase env present) and has `noindex` plus `no-store`. `/api/preview` returns 401.
+  - No secret key or DB URL in client bundles.
+  - Database unchanged: 0 content, 0 files, 1 user, 1 admin. RLS on for all 6 tables; sign-up disabled; email the only provider; anonymous reads of `admins` are refused.
+- **Not done by automation (owner's manual tests):** signing in on production, editing, publishing. The CMS is empty, so the site shows the built-in content until Import + Publish.
+- **Rollback:** Vercel → Deployments → the `425f193` production deployment → Instant Rollback.
+- **Housekeeping:** an empty `pass.txt` is tracked in Git (no content); it can be deleted later.
+
+### Production release plan (as executed)
 
 1. **Commit to release:** the latest `feature/dashboard` HEAD. The app code is identical to `f756795`; later commits are docs/scripts only. Check with `git diff --stat f756795 HEAD -- src next.config.ts package-lock.json` (empty). If bugs are fixed after manual acceptance, the new HEAD includes them. App code is identical to `f756795` unless a bug fix follows. Fast-forward `main` from `425f193`.
    - Verified: `main` is an ancestor of `feature/dashboard`, so it's a fast-forward.
